@@ -1,0 +1,157 @@
+name: Update Research Data
+
+on:
+  schedule:
+    # Run every Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      max_results:
+        description: 'Max papers per category'
+        required: false
+        default: '500'
+      categories:
+        description: 'Categories (comma-separated, or "all")'
+        required: false
+        default: 'cs.AI,cs.LG,cs.CL,cs.CV,cs.NE'
+
+env:
+  DATA_BRANCH: data
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  collect-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: |
+          uv pip install -e ".[dashboard]" --system
+
+      - name: Checkout or create data branch
+        run: |
+          git fetch origin ${{ env.DATA_BRANCH }} || true
+          git checkout ${{ env.DATA_BRANCH }} || git checkout -b ${{ env.DATA_BRANCH }}
+          git pull origin ${{ env.DATA_BRANCH }} || true
+
+      - name: Collect recent papers
+        run: |
+          mkdir -p data
+          python -c "
+          from arxiv_researcher.collector import ArxivCollector
+          from datetime import datetime, timedelta
+
+          categories = '${{ github.event.inputs.categories || 'cs.AI,cs.LG,cs.CL,cs.CV,cs.NE' }}'
+          max_results = int('${{ github.event.inputs.max_results || '500' }}')
+
+          collector = ArxivCollector(output_dir='data')
+          papers = collector.collect(
+              categories=categories.split(',') if categories != 'all' else 'all',
+              max_results=max_results,
+              start_date=datetime.now() - timedelta(days=30),
+              end_date=datetime.now(),
+          )
+          print(f'Collected {len(papers)} papers')
+          "
+
+      - name: Generate visualizations
+        run: |
+          python -c "
+          import json
+          import os
+          from datetime import datetime
+
+          # Load data
+          with open('data/papers.json', 'r') as f:
+              papers = json.load(f)
+
+          # Generate stats
+          stats = {
+              'last_updated': datetime.now().isoformat(),
+              'total_papers': len(papers),
+              'categories': {},
+              'top_authors': [],
+              'recent_hot_papers': [],
+          }
+
+          # Count by category
+          from collections import Counter
+          categories = Counter()
+          for p in papers:
+              for cat in p.get('categories', []):
+                  categories[cat] += 1
+          stats['categories'] = dict(categories.most_common(20))
+
+          # Top cited papers
+          papers_with_citations = [p for p in papers if p.get('citation_count', 0) > 0]
+          papers_with_citations.sort(key=lambda x: x.get('citation_count', 0), reverse=True)
+          stats['recent_hot_papers'] = [
+              {'title': p['title'][:100], 'citations': p.get('citation_count', 0), 'arxiv_id': p['arxiv_id']}
+              for p in papers_with_citations[:10]
+          ]
+
+          # Save stats
+          with open('data/stats.json', 'w') as f:
+              json.dump(stats, f, indent=2)
+
+          print(f'Generated stats for {len(papers)} papers')
+          "
+
+      - name: Generate README badge data
+        run: |
+          python -c "
+          import json
+
+          with open('data/stats.json', 'r') as f:
+              stats = json.load(f)
+
+          # Create shields.io endpoint
+          badge_data = {
+              'schemaVersion': 1,
+              'label': 'papers',
+              'message': f\"{stats['total_papers']:,}\",
+              'color': 'blue'
+          }
+
+          with open('data/badge.json', 'w') as f:
+              json.dump(badge_data, f)
+
+          print('Badge data generated')
+          "
+
+      - name: Commit and push data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "Update research data - $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "No changes to commit"
+          git push origin ${{ env.DATA_BRANCH }}
+
+      - name: Create data summary
+        run: |
+          echo "## Data Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python -c "
+          import json
+          with open('data/stats.json', 'r') as f:
+              stats = json.load(f)
+          print(f\"- **Total Papers**: {stats['total_papers']:,}\")
+          print(f\"- **Last Updated**: {stats['last_updated']}\")
+          print(f\"- **Top Categories**:\")
+          for cat, count in list(stats['categories'].items())[:5]:
+              print(f\"  - {cat}: {count:,} papers\")
+          " >> $GITHUB_STEP_SUMMARY

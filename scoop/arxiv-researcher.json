@@ -1,0 +1,38 @@
+{
+    "version": "1.0.0",
+    "description": "Research intelligence and visualization dashboard for arXiv",
+    "homepage": "https://github.com/dcondrey/arXivResearcher",
+    "license": "Apache-2.0",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/dcondrey/arXivResearcher/releases/download/v1.0.0/arxiv-researcher-1.0.0-py3-none-any.whl",
+            "hash": "PLACEHOLDER_HASH"
+        }
+    },
+    "depends": "python",
+    "pre_install": [
+        "if (!(Test-Path \"$dir\\venv\")) {",
+        "    python -m venv \"$dir\\venv\"",
+        "}"
+    ],
+    "installer": {
+        "script": [
+            "& \"$dir\\venv\\Scripts\\pip.exe\" install --upgrade pip",
+            "& \"$dir\\venv\\Scripts\\pip.exe\" install \"$dir\\arxiv-researcher-$version-py3-none-any.whl\""
+        ]
+    },
+    "bin": [
+        ["venv\\Scripts\\arxiv-researcher.exe", "arxiv-researcher"],
+        ["venv\\Scripts\\arxiv-dashboard.exe", "arxiv-dashboard"]
+    ],
+    "checkver": {
+        "github": "https://github.com/dcondrey/arXivResearcher"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/dcondrey/arXivResearcher/releases/download/v$version/arxiv-researcher-$version-py3-none-any.whl"
+            }
+        }
+    }
+}
