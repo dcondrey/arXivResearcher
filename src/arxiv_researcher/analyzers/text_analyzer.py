@@ -7,13 +7,23 @@ Extract insights from paper titles and abstracts:
 - Dataset mentions
 - Contribution type classification
 - Novelty indicators
+
+Supports configurable term filtering and merging via YAML config files.
 """
 
 import re
 import math
+import os
 from collections import Counter, defaultdict
 from typing import List, Dict, Set, Tuple, Optional
-import json
+from pathlib import Path
+
+# Try to load YAML for config files
+try:
+    import yaml
+    HAS_YAML = True
+except ImportError:
+    HAS_YAML = False
 
 
 # Common ML/AI methods and techniques
@@ -244,9 +254,138 @@ NOVELTY_PHRASES = [
 class TextAnalyzer:
     """Analyze paper text to extract insights."""
 
-    def __init__(self):
+    def __init__(self, config_dir: Optional[str] = None):
+        """
+        Initialize the text analyzer.
+
+        Args:
+            config_dir: Path to config directory containing text_filters.yaml
+                       and term_merges.yaml. Defaults to package config dir.
+        """
+        self.config_dir = config_dir or self._get_default_config_dir()
         self.stopwords = self._load_stopwords()
+        self.filter_words = self._load_filter_words()
+        self.term_merges = self._load_term_merges()
+        self.filter_patterns = self._load_filter_patterns()
         self.idf_cache = {}
+
+    def _get_default_config_dir(self) -> str:
+        """Get the default config directory path."""
+        # Check for config in package directory
+        pkg_dir = Path(__file__).parent.parent
+        config_dir = pkg_dir / "config"
+        if config_dir.exists():
+            return str(config_dir)
+        # Check for config in current working directory
+        cwd_config = Path.cwd() / "config"
+        if cwd_config.exists():
+            return str(cwd_config)
+        return str(config_dir)
+
+    def _load_yaml_config(self, filename: str) -> Dict:
+        """Load a YAML config file."""
+        if not HAS_YAML:
+            return {}
+        config_path = Path(self.config_dir) / filename
+        if config_path.exists():
+            try:
+                with open(config_path, 'r') as f:
+                    return yaml.safe_load(f) or {}
+            except Exception as e:
+                print(f"Warning: Could not load {filename}: {e}")
+        return {}
+
+    def _load_filter_words(self) -> Set[str]:
+        """Load all filter words from config."""
+        config = self._load_yaml_config("text_filters.yaml")
+        filter_words = set()
+
+        # Combine all filter categories
+        for category in ['boilerplate_verbs', 'boilerplate_nouns', 'boilerplate_adjectives',
+                         'filler_words', 'infrastructure_terms', 'performance_metrics']:
+            if category in config:
+                filter_words.update(w.lower() for w in config[category])
+
+        return filter_words
+
+    def _load_filter_patterns(self) -> List[str]:
+        """Load regex filter patterns from config."""
+        config = self._load_yaml_config("text_filters.yaml")
+        return config.get('filter_patterns', [])
+
+    def _load_term_merges(self) -> Dict[str, str]:
+        """Load term merges from config and build variant-to-canonical mapping."""
+        config = self._load_yaml_config("term_merges.yaml")
+        merges = {}
+
+        # Process each category
+        for category_name, category_data in config.items():
+            if isinstance(category_data, dict):
+                for canonical, variants in category_data.items():
+                    if isinstance(variants, list):
+                        for variant in variants:
+                            # Map variant to canonical form
+                            merges[variant.lower()] = canonical.lower()
+                        # Also map canonical to itself (for consistency)
+                        merges[canonical.lower()] = canonical.lower()
+
+        return merges
+
+    def normalize_term(self, term: str) -> str:
+        """Normalize a term using the merge mapping."""
+        term_lower = term.lower()
+        return self.term_merges.get(term_lower, term_lower)
+
+    def should_filter(self, term: str) -> bool:
+        """Check if a term should be filtered out."""
+        term_lower = term.lower()
+
+        # Check against filter words
+        if term_lower in self.filter_words:
+            return True
+
+        # Check against stopwords
+        if term_lower in self.stopwords:
+            return True
+
+        # Check against filter patterns
+        for pattern in self.filter_patterns:
+            try:
+                if re.match(pattern, term_lower):
+                    return True
+            except re.error:
+                pass
+
+        return False
+
+    def process_keywords(self, keywords: List[Tuple[str, float]]) -> List[Tuple[str, float]]:
+        """
+        Process a list of (keyword, score) tuples:
+        1. Filter out unwanted terms
+        2. Merge variants to canonical forms
+        3. Combine scores for merged terms
+        """
+        # Group by canonical form
+        canonical_scores = defaultdict(float)
+
+        for term, score in keywords:
+            # Skip filtered terms
+            if self.should_filter(term):
+                continue
+
+            # Normalize to canonical form
+            canonical = self.normalize_term(term)
+
+            # Skip if canonical is filtered
+            if self.should_filter(canonical):
+                continue
+
+            # Accumulate scores
+            canonical_scores[canonical] += score
+
+        # Sort by score
+        result = sorted(canonical_scores.items(), key=lambda x: x[1], reverse=True)
+        return result
 
     def _load_stopwords(self) -> Set[str]:
         """Load stopwords list."""
@@ -345,14 +484,23 @@ class TextAnalyzer:
         return min(matches / 5.0, 1.0)
 
     def extract_keywords_single(self, title: str, abstract: str, top_n: int = 10) -> List[str]:
-        """Extract keywords from a single paper using statistical methods."""
+        """Extract keywords from a single paper using statistical methods with filtering."""
         text = f"{title} {title} {title} {abstract}"  # Weight title higher
 
         # Tokenize and clean
         words = re.findall(r'\b[a-z][a-z\-]+[a-z]\b', text.lower())
-        words = [w for w in words if w not in self.stopwords and len(w) > 2]
 
-        # Get bigrams
+        # Filter and normalize
+        filtered_words = []
+        for w in words:
+            if len(w) > 2 and not self.should_filter(w):
+                normalized = self.normalize_term(w)
+                if not self.should_filter(normalized):
+                    filtered_words.append(normalized)
+
+        words = filtered_words
+
+        # Get bigrams (from filtered words)
         bigrams = [f"{words[i]} {words[i+1]}" for i in range(len(words)-1)]
 
         # Count frequencies
@@ -368,6 +516,10 @@ class TextAnalyzer:
 
         for bigram, freq in bigram_freq.most_common(30):
             if freq >= 2:
+                # Check if bigram components are filtered
+                bigram_words = bigram.split()
+                if any(self.should_filter(w) for w in bigram_words):
+                    continue
                 first_pos = text.lower().find(bigram)
                 position_score = 1.0 / (1 + first_pos / 100)
                 scored.append((bigram, freq * position_score * 1.5))  # Boost bigrams
@@ -423,7 +575,7 @@ class TextAnalyzer:
         return results
 
     def extract_corpus_topics(self, papers: List[Dict], n_topics: int = 20) -> Dict:
-        """Extract corpus-wide topics using co-occurrence."""
+        """Extract corpus-wide topics using co-occurrence with filtering and normalization."""
         # Build co-occurrence matrix
         word_cooccur = defaultdict(Counter)
         word_freq = Counter()
@@ -431,8 +583,16 @@ class TextAnalyzer:
         for paper in papers:
             text = f"{paper.get('title', '')} {paper.get('abstract', '')}".lower()
             words = list(set(re.findall(r'\b[a-z][a-z\-]+[a-z]\b', text)))
-            words = [w for w in words if w not in self.stopwords and len(w) > 2]
 
+            # Filter and normalize words
+            normalized_words = []
+            for w in words:
+                if len(w) > 2 and not self.should_filter(w):
+                    normalized = self.normalize_term(w)
+                    if not self.should_filter(normalized):
+                        normalized_words.append(normalized)
+
+            words = list(set(normalized_words))  # Dedupe after normalization
             word_freq.update(words)
 
             for i, w1 in enumerate(words):
@@ -444,14 +604,18 @@ class TextAnalyzer:
         topics = []
         used_words = set()
 
-        for word, freq in word_freq.most_common(200):
+        for word, freq in word_freq.most_common(300):  # Look at more candidates
             if word in used_words:
+                continue
+
+            # Skip filtered words that might have slipped through
+            if self.should_filter(word):
                 continue
 
             # Get words that frequently co-occur
             cooccur = word_cooccur[word]
-            related = [w for w, c in cooccur.most_common(10)
-                      if w not in used_words and c >= 3][:5]
+            related = [w for w, c in cooccur.most_common(15)
+                      if w not in used_words and c >= 3 and not self.should_filter(w)][:5]
 
             if related:
                 topic = [word] + related
@@ -466,11 +630,15 @@ class TextAnalyzer:
             if len(topics) >= n_topics:
                 break
 
-        return {"topics": topics, "word_frequencies": dict(word_freq.most_common(100))}
+        # Filter the word frequencies as well
+        filtered_freq = {w: f for w, f in word_freq.most_common(200)
+                        if not self.should_filter(w)}
+
+        return {"topics": topics, "word_frequencies": dict(list(filtered_freq.items())[:100])}
 
     def find_emerging_terms(self, papers: List[Dict],
                            time_field: str = "published_date") -> Dict[str, Dict]:
-        """Find terms that are emerging (growing in frequency over time)."""
+        """Find terms that are emerging (growing in frequency over time) with filtering and normalization."""
         # Group papers by time period
         periods = defaultdict(list)
         for paper in papers:
@@ -488,7 +656,7 @@ class TextAnalyzer:
         early_periods = sorted_periods[:mid]
         recent_periods = sorted_periods[mid:]
 
-        # Count terms in each half
+        # Count terms in each half with filtering and normalization
         def count_terms(period_list):
             term_count = Counter()
             total = 0
@@ -496,8 +664,16 @@ class TextAnalyzer:
                 for paper in periods[period]:
                     text = f"{paper.get('title', '')} {paper.get('abstract', '')}".lower()
                     words = set(re.findall(r'\b[a-z][a-z\-]+[a-z]\b', text))
-                    words = {w for w in words if w not in self.stopwords and len(w) > 3}
-                    term_count.update(words)
+
+                    # Filter and normalize
+                    normalized_words = set()
+                    for w in words:
+                        if len(w) > 3 and not self.should_filter(w):
+                            normalized = self.normalize_term(w)
+                            if not self.should_filter(normalized):
+                                normalized_words.add(normalized)
+
+                    term_count.update(normalized_words)
                     total += 1
             return term_count, total
 
@@ -507,6 +683,10 @@ class TextAnalyzer:
         # Find emerging terms (much more frequent in recent)
         emerging = {}
         for term in recent_counts:
+            # Skip any filtered terms that slipped through
+            if self.should_filter(term):
+                continue
+
             recent_rate = recent_counts[term] / recent_total
             early_rate = early_counts.get(term, 0) / early_total if early_total else 0
 

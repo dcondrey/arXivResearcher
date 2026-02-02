@@ -1,0 +1,867 @@
+# Term Merges Configuration
+# ==========================
+# Maps variant terms to canonical forms for consistent keyword analysis
+# Format: canonical_term: [list of variants]
+# Users can modify this file to customize term normalization
+
+# =============================================================================
+# NEURAL NETWORK ARCHITECTURES
+# =============================================================================
+
+neural_architectures:
+  transformer:
+    - transformers
+    - transformer-based
+    - transformer-like
+    - attention-based
+    - self-attention
+    - multi-head attention
+    - mha
+    - attention mechanism
+
+  cnn:
+    - cnns
+    - convolutional neural network
+    - convolutional neural networks
+    - convnet
+    - convnets
+    - conv-net
+    - convolution
+    - convolutional
+
+  rnn:
+    - rnns
+    - recurrent neural network
+    - recurrent neural networks
+    - recurrent
+
+  lstm:
+    - lstms
+    - long short-term memory
+    - long short term memory
+
+  gru:
+    - grus
+    - gated recurrent unit
+    - gated recurrent units
+
+  mlp:
+    - mlps
+    - multilayer perceptron
+    - multi-layer perceptron
+    - feedforward
+    - feed-forward
+
+  autoencoder:
+    - autoencoders
+    - ae
+    - aes
+    - vae
+    - vaes
+    - variational autoencoder
+    - variational autoencoders
+
+  gan:
+    - gans
+    - generative adversarial network
+    - generative adversarial networks
+    - discriminator
+    - generator
+
+  diffusion-model:
+    - diffusion models
+    - diffusion-based
+    - denoising diffusion
+    - ddpm
+    - ddim
+    - score-based
+
+  graph-neural-network:
+    - gnn
+    - gnns
+    - graph neural networks
+    - gcn
+    - gcns
+    - graph convolutional
+    - gat
+    - graph attention
+    - message passing
+
+  neural-network:
+    - neural networks
+    - nn
+    - nns
+    - dnn
+    - dnns
+    - deep neural network
+    - deep neural networks
+    - ann
+    - anns
+    - artificial neural network
+
+# =============================================================================
+# LARGE LANGUAGE MODELS
+# =============================================================================
+
+llm_models:
+  gpt:
+    - gpt-1
+    - gpt-2
+    - gpt-3
+    - gpt-4
+    - gpt-4o
+    - gpt1
+    - gpt2
+    - gpt3
+    - gpt4
+    - openai-gpt
+    - chatgpt
+    - chat-gpt
+    - instructgpt
+
+  bert:
+    - bert-based
+    - bert-large
+    - bert-base
+    - bert-uncased
+    - bert-cased
+    - roberta
+    - distilbert
+    - albert
+    - electra
+    - deberta
+    - xlm-roberta
+    - mbert
+    - multilingual-bert
+
+  llama:
+    - llama-2
+    - llama-3
+    - llama-4
+    - llama-7b
+    - llama-13b
+    - llama-70b
+    - codellama
+    - code-llama
+
+  t5:
+    - t5-small
+    - t5-base
+    - t5-large
+    - t5-xl
+    - t5-xxl
+    - flan-t5
+    - byt5
+
+  llm:
+    - llms
+    - llm-based
+    - large language model
+    - large language models
+    - foundation model
+    - foundation models
+
+  mistral:
+    - mistral-7b
+    - mixtral
+    - mixtral-8x7b
+
+  claude:
+    - claude-2
+    - claude-3
+    - anthropic
+    - claude-3-sonnet
+    - sonnet
+    - opus
+
+  gemini:
+    - gemini-pro
+    - gemini-ultra
+    - bard
+    - gemini-2
+    - gemini-2.5
+
+  palm:
+    - palm-2
+    - palm2
+    - pathways
+
+# =============================================================================
+# VISION MODELS
+# =============================================================================
+
+vision_models:
+  clip:
+    - openclip
+    - open-clip
+    - clip-vit
+
+  stable-diffusion:
+    - sd
+    - sd-xl
+    - sdxl
+    - stable-diffusion-xl
+    - sd-1.5
+    - sd-2.1
+
+  resnet:
+    - resnet-18
+    - resnet-34
+    - resnet-50
+    - resnet-101
+    - resnet-152
+    - resnext
+    - wide-resnet
+
+  vit:
+    - vision transformer
+    - vision transformers
+    - vit-b
+    - vit-l
+    - vit-h
+    - deit
+    - swin
+    - swin-transformer
+
+  whisper:
+    - whisper-small
+    - whisper-medium
+    - whisper-large
+
+# =============================================================================
+# TRAINING PARADIGMS
+# =============================================================================
+
+training_paradigms:
+  pre-training:
+    - pretraining
+    - pre training
+    - pretrain
+    - pre-train
+    - pre-trained
+    - pretrained
+
+  fine-tuning:
+    - finetuning
+    - fine tuning
+    - finetune
+    - fine-tune
+    - fine-tuned
+    - finetuned
+
+  self-supervised:
+    - self supervised
+    - selfsupervised
+    - ssl
+    - self-supervision
+    - self supervision
+
+  semi-supervised:
+    - semi supervised
+    - semisupervised
+
+  supervised-learning:
+    - fully-supervised
+    - supervised learning
+    - fully supervised
+
+  unsupervised-learning:
+    - unsupervised learning
+
+  weakly-supervised:
+    - weakly supervised
+    - weak supervision
+    - weak-supervision
+    - distant supervision
+    - distantly-supervised
+
+  reinforcement-learning:
+    - rl
+    - reinforcement
+    - deep rl
+    - deep reinforcement learning
+    - drl
+    - policy gradient
+    - actor-critic
+    - a2c
+    - a3c
+    - ppo
+    - dqn
+    - q-learning
+
+  meta-learning:
+    - metalearning
+    - meta learning
+    - learning-to-learn
+    - learn to learn
+    - maml
+    - few-shot learning
+
+  transfer-learning:
+    - transfer
+    - domain adaptation
+    - domain-adaptation
+
+  federated-learning:
+    - fl
+    - fedavg
+    - federated
+    - federated averaging
+
+  contrastive-learning:
+    - simclr
+    - moco
+    - byol
+    - infonce
+    - contrastive
+    - contrastive loss
+
+# =============================================================================
+# PROMPTING AND IN-CONTEXT METHODS
+# =============================================================================
+
+prompting_methods:
+  prompt-engineering:
+    - prompt engineering
+    - prompt design
+    - prompt tuning
+    - prompt-tuning
+    - soft prompts
+    - hard prompts
+    - prompting
+
+  in-context-learning:
+    - in context learning
+    - icl
+    - in-context
+    - few-shot prompting
+
+  chain-of-thought:
+    - chain of thought
+    - cot
+    - cot prompting
+    - reasoning chain
+    - step-by-step reasoning
+
+  zero-shot:
+    - zero shot
+    - zeroshot
+    - 0-shot
+    - zero-shot learning
+
+  few-shot:
+    - few shot
+    - fewshot
+    - k-shot
+    - n-shot
+    - few-shot learning
+
+  one-shot:
+    - one shot
+    - oneshot
+    - 1-shot
+
+  instruction-tuning:
+    - instruction tuning
+    - instruction-tuned
+    - instruction-following
+    - instruction following
+
+  rlhf:
+    - reinforcement learning from human feedback
+    - rl from human feedback
+    - human feedback
+
+  dpo:
+    - direct preference optimization
+    - preference optimization
+
+# =============================================================================
+# NLP TASKS
+# =============================================================================
+
+nlp_tasks:
+  natural-language-processing:
+    - nlp
+    - natural language
+    - language processing
+
+  natural-language-understanding:
+    - nlu
+    - language understanding
+    - text understanding
+
+  natural-language-generation:
+    - nlg
+    - language generation
+    - text generation
+
+  machine-translation:
+    - mt
+    - neural machine translation
+    - nmt
+    - translation
+
+  question-answering:
+    - qa
+    - q&a
+    - reading comprehension
+    - machine reading
+
+  text-classification:
+    - text categorization
+    - document classification
+    - sentiment analysis
+    - sentiment
+
+  named-entity-recognition:
+    - ner
+    - entity recognition
+    - entity extraction
+    - sequence labeling
+
+  relation-extraction:
+    - re
+    - relation classification
+    - knowledge extraction
+
+  text-summarization:
+    - summarization
+    - abstractive summarization
+    - extractive summarization
+
+  information-retrieval:
+    - ir
+    - retrieval
+    - document retrieval
+    - passage retrieval
+    - dense retrieval
+
+  semantic-parsing:
+    - semantic parsing
+    - text-to-sql
+    - text to sql
+    - text2sql
+
+  word-embedding:
+    - word embeddings
+    - word vectors
+    - word2vec
+    - glove
+    - fasttext
+
+  sentence-embedding:
+    - sentence embeddings
+    - sentence vectors
+    - sentence-bert
+    - sbert
+
+  tokenization:
+    - tokenizer
+    - tokenizers
+    - bpe
+    - wordpiece
+    - sentencepiece
+
+# =============================================================================
+# COMPUTER VISION TASKS
+# =============================================================================
+
+cv_tasks:
+  computer-vision:
+    - cv
+    - vision
+    - visual
+
+  image-classification:
+    - image recognition
+    - visual recognition
+    - object recognition
+
+  object-detection:
+    - detection
+    - detector
+    - detectors
+    - yolo
+    - faster-rcnn
+    - detr
+
+  semantic-segmentation:
+    - segmentation
+    - pixel-wise
+    - pixelwise
+    - mask
+
+  instance-segmentation:
+    - panoptic segmentation
+    - panoptic
+
+  image-generation:
+    - image synthesis
+    - visual synthesis
+    - text-to-image
+    - text2image
+    - t2i
+
+  image-editing:
+    - image manipulation
+    - image inpainting
+    - inpainting
+
+  super-resolution:
+    - sr
+    - image super-resolution
+    - upscaling
+
+  video-understanding:
+    - video
+    - video analysis
+    - video recognition
+    - temporal
+
+  depth-estimation:
+    - depth prediction
+    - monocular depth
+
+  pose-estimation:
+    - human pose
+    - body pose
+    - keypoint detection
+
+  face-recognition:
+    - facial recognition
+    - face detection
+    - face verification
+
+  ocr:
+    - optical character recognition
+    - text recognition
+    - scene text
+
+  3d-vision:
+    - 3d reconstruction
+    - 3d understanding
+    - point cloud
+    - pointcloud
+    - nerf
+
+# =============================================================================
+# MULTIMODAL
+# =============================================================================
+
+multimodal:
+  multimodal:
+    - multi-modal
+    - multi modal
+    - cross-modal
+    - crossmodal
+    - cross modal
+
+  vision-language:
+    - vision and language
+    - visual-language
+    - visual language
+    - vlm
+    - vlms
+
+  image-text:
+    - image text
+    - image-to-text
+    - text-to-image
+
+  video-text:
+    - video text
+    - video-to-text
+    - text-to-video
+
+  audio-visual:
+    - audio visual
+    - audiovisual
+    - av
+
+  speech-text:
+    - speech text
+    - speech-to-text
+    - text-to-speech
+    - stt
+    - tts
+    - asr
+
+# =============================================================================
+# AI SAFETY AND ALIGNMENT
+# =============================================================================
+
+ai_safety:
+  alignment:
+    - aligned
+    - value alignment
+    - ai alignment
+
+  safety:
+    - ai safety
+    - safe ai
+    - safer
+
+  robustness:
+    - robust
+    - adversarial robustness
+    - certified robustness
+
+  adversarial-examples:
+    - adversarial
+    - adversarial attacks
+    - adversarial perturbations
+    - adversarial training
+
+  jailbreak:
+    - jailbreaking
+    - jailbreaks
+    - prompt injection
+    - prompt-injection
+
+  red-teaming:
+    - red team
+    - red-team
+    - adversarial evaluation
+
+  watermarking:
+    - watermark
+    - watermarks
+    - text watermarking
+
+  interpretability:
+    - interpretable
+    - explainability
+    - explainable
+    - xai
+    - explainable-ai
+
+  fairness:
+    - fair
+    - bias
+    - debiasing
+    - debiased
+
+  hallucination:
+    - hallucinations
+    - factuality
+    - factual
+    - grounding
+
+  toxicity:
+    - toxic
+    - harmful
+    - harm
+    - harmful content
+
+  privacy:
+    - differential privacy
+    - dp
+    - private
+    - federated
+
+# =============================================================================
+# LLM/AGENT SPECIFIC
+# =============================================================================
+
+llm_capabilities:
+  retrieval-augmented:
+    - rag
+    - retrieval augmented generation
+    - retrieval-augmented generation
+    - retrieval augmented
+
+  agentic:
+    - agent
+    - agents
+    - ai agent
+    - ai agents
+    - autonomous agent
+    - autonomous agents
+
+  tool-use:
+    - tool use
+    - tool-using
+    - tool calling
+    - function calling
+    - api calling
+
+  reasoning:
+    - reasoning
+    - chain-of-thought
+    - step-by-step
+    - logical reasoning
+    - mathematical reasoning
+
+  code-generation:
+    - coding
+    - code synthesis
+    - program synthesis
+    - code completion
+    - copilot
+
+  context-window:
+    - context length
+    - long context
+    - extended context
+
+  quantization:
+    - quantized
+    - quantize
+    - int8
+    - int4
+    - gguf
+    - gptq
+    - awq
+
+  distillation:
+    - knowledge distillation
+    - model distillation
+    - distilled
+
+  mixture-of-experts:
+    - moe
+    - sparse moe
+    - expert
+    - experts
+
+# =============================================================================
+# CRYPTOGRAPHY AND SECURITY
+# =============================================================================
+
+cryptography:
+  blockchain:
+    - distributed ledger
+    - dlt
+    - smart contract
+    - smart contracts
+
+  cryptography:
+    - cryptographic
+    - crypto
+    - encryption
+    - encrypted
+
+  zero-knowledge:
+    - zk
+    - zkp
+    - zero knowledge proof
+    - zk-snark
+    - zk-stark
+
+  homomorphic-encryption:
+    - he
+    - fhe
+    - fully homomorphic
+
+  secure-computation:
+    - mpc
+    - multi-party computation
+    - secure multi-party
+    - smpc
+
+  digital-signature:
+    - signature
+    - signatures
+    - signing
+
+  hash-function:
+    - hash
+    - hashing
+    - sha
+    - sha256
+
+  authentication:
+    - auth
+    - verification
+    - verify
+
+  trusted-execution:
+    - tee
+    - sgx
+    - trustzone
+    - enclave
+    - secure enclave
+
+  proof-of-work:
+    - pow
+    - mining
+
+  proof-of-stake:
+    - pos
+    - staking
+
+# =============================================================================
+# OPTIMIZATION
+# =============================================================================
+
+optimization:
+  gradient-descent:
+    - sgd
+    - stochastic gradient descent
+    - gd
+
+  adam:
+    - adamw
+    - adam-w
+    - adagrad
+    - rmsprop
+
+  learning-rate:
+    - lr
+    - learning rate schedule
+    - lr schedule
+    - warmup
+
+  batch-normalization:
+    - batchnorm
+    - batch norm
+    - bn
+    - layernorm
+    - layer normalization
+
+  dropout:
+    - drop out
+    - droppath
+    - stochastic depth
+
+  regularization:
+    - regularizer
+    - weight decay
+    - l1
+    - l2
+
+  attention:
+    - self-attention
+    - cross-attention
+    - multi-head
+    - scaled dot-product
+
+  normalization:
+    - normalize
+    - normalized
+
+  activation:
+    - relu
+    - gelu
+    - swish
+    - silu
+    - tanh
+    - sigmoid
+
+  loss-function:
+    - loss
+    - cross-entropy
+    - cross entropy
+    - mse loss
+    - focal loss
+
+# =============================================================================
+# DEEP LEARNING GENERAL
+# =============================================================================
+
+deep_learning:
+  deep-learning:
+    - deep
+    - learning-based
+    - dl
