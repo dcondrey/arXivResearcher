@@ -13,6 +13,7 @@ on:
 permissions:
   contents: write
   id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -87,6 +88,11 @@ jobs:
           echo "" >> changelog.md
           git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> changelog.md || echo "- Initial release" >> changelog.md
 
+      - name: Generate Generic Attestations
+        uses: actions/attest@v4.1.0
+        with:
+          subject-path: 'dist/*'
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -107,7 +113,7 @@ jobs:
       - name: Calculate SHA256
         id: sha
         run: |
-          SHA=$(curl -sL "https://github.com/dcondrey/arXivResearcher/archive/refs/tags/v${{ needs.build.outputs.version }}.tar.gz" | sha256sum | cut -d' ' -f1)
+          SHA=$(curl -sL "https://github.com/dcondrey/arXivResearcher/archive/refs/tags/v${{ needs.build.outputs.version }}.tar.gz" | sha256sum | cut -d' '-f1)
           echo "sha256=$SHA" >> $GITHUB_OUTPUT
 
       - name: Update Homebrew formula
