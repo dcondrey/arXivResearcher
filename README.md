@@ -38,7 +38,8 @@
 
 **arXiv Researcher** is a comprehensive tool for mining, analyzing, and visualizing research data from [arXiv](https://arxiv.org). It helps researchers identify trends, discover opportunities, and understand the research landscape across computer science, physics, mathematics, and more.
 
-## Features
+<details>
+<summary><strong>Features</strong> -- data collection, analysis, visualization</summary>
 
 ### Data Collection
 - **Multi-source aggregation**: Collects data from arXiv, Semantic Scholar, OpenAlex, and Papers With Code
@@ -59,6 +60,8 @@
 - **Network Graphs**: PyVis collaboration and citation networks
 - **Trend Charts**: Plotly time series and heatmaps
 - **Export Options**: JSON, CSV, Excel, and PNG/SVG charts
+
+</details>
 
 ## Installation
 
@@ -177,7 +180,8 @@ The dashboard provides:
 - **Author Network**: Collaboration visualization
 - **Success Factors**: What makes papers impactful
 
-## Data Sources
+<details>
+<summary><strong>Data Sources</strong> -- arXiv, Semantic Scholar, OpenAlex, Papers With Code</summary>
 
 | Source | Data Provided | Rate Limit |
 |--------|--------------|------------|
@@ -186,7 +190,10 @@ The dashboard provides:
 | [OpenAlex](https://openalex.org) | Institutions, funders, concepts | 10 req/s |
 | [Papers With Code](https://paperswithcode.com) | Code repos, benchmarks, datasets | 1 req/s |
 
-## Analysis Modules
+</details>
+
+<details>
+<summary><strong>Analysis Modules</strong> -- text, network, trend, gap, impact, embedding, citation, author trajectory</summary>
 
 | Module | Description |
 |--------|-------------|
@@ -199,7 +206,10 @@ The dashboard provides:
 | **Citation Graph** | Full citation networks, idea lineage |
 | **Author Trajectory** | Rising stars, topic migration |
 
-## Output Example
+</details>
+
+<details>
+<summary><strong>Output Example</strong></summary>
 
 ```
 RESEARCH INTELLIGENCE REPORT
@@ -223,6 +233,20 @@ Success Factors:
   • Senior co-author: 3.5x more citations
 ```
 
+</details>
+
+<details>
+<summary><strong>Roadmap</strong></summary>
+
+- [ ] Real-time paper monitoring with alerts
+- [ ] LLM-powered research question generation
+- [ ] Citation prediction models
+- [ ] Integration with reference managers
+- [ ] Collaborative filtering recommendations
+- [ ] REST API for programmatic access
+
+</details>
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
@@ -239,15 +263,6 @@ pytest tests/
 # Run linting
 ruff check src/ tests/
 ```
-
-## Roadmap
-
-- [ ] Real-time paper monitoring with alerts
-- [ ] LLM-powered research question generation
-- [ ] Citation prediction models
-- [ ] Integration with reference managers
-- [ ] Collaborative filtering recommendations
-- [ ] REST API for programmatic access
 
 ## License
 
