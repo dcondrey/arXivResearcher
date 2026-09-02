@@ -1,28 +1,29 @@
-<p align="center">
-  <img src="docs/images/logo.svg" alt="arXiv Researcher" width="120">
-</p>
+<!-- repo-header:start -->
+<img src="docs/images/logo.svg" alt="arXiv Researcher logo" width="120" align="left">
 
-<h1 align="center">arXiv Researcher</h1>
+<h1>arXiv Researcher</h1>
 
-<p align="center">
-  <strong>Research Intelligence and Visualization Dashboard for arXiv</strong>
-</p>
+<p><strong>arXiv research intelligence and visualization dashboard for exploring research data</strong></p>
 
-<p align="center">
-  <a href="https://github.com/dcondrey/arXivResearcher/actions/workflows/ci.yml">
-    <img src="https://github.com/dcondrey/arXivResearcher/actions/workflows/ci.yml/badge.svg" alt="CI">
+<br clear="left">
+
+[![CI](https://img.shields.io/github/actions/workflow/status/dcondrey/arXivResearcher/update-data.yml?style=flat-square&labelColor=20232a&branch=main&label=CI)](https://github.com/dcondrey/arXivResearcher/actions/workflows/update-data.yml) [![Best Practices Evidence](https://img.shields.io/badge/best%20practices-evidence%20reviewed-6a4c93?style=flat-square&labelColor=20232a)](.bestpractices.json) [![License](https://img.shields.io/github/license/dcondrey/arXivResearcher?style=flat-square&labelColor=20232a&color=007ec6&label=license)](https://github.com/dcondrey/arXivResearcher/blob/main/LICENSE) [![Codecov](https://img.shields.io/codecov/c/github/dcondrey/arXivResearcher?style=flat-square&labelColor=20232a&label=coverage)](https://codecov.io/gh/dcondrey/arXivResearcher) [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-Contributor%20Covenant%202.1-6a4c93?style=flat-square&labelColor=20232a)](https://github.com/dcondrey/arXivResearcher/blob/main/CODE_OF_CONDUCT.md) [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor-EA4AAA?style=flat-square&labelColor=20232a)](https://github.com/sponsors/dcondrey)
+<!-- repo-header:end -->
+
+<a href="https://github.com/dcondrey/arXivResearcher/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/dcondrey/arXivResearcher/ci.yml?style=flat-square&labelColor=20232a&branch=main" alt="CI">
   </a>
   <a href="https://pypi.org/project/arxiv-researcher/">
-    <img src="https://img.shields.io/pypi/v/arxiv-researcher.svg" alt="PyPI version">
+    <img src="https://img.shields.io/pypi/v/arxiv-researcher.svg?style=flat-square&labelColor=20232a&color=007ec6" alt="PyPI version">
   </a>
   <a href="https://pypi.org/project/arxiv-researcher/">
-    <img src="https://img.shields.io/pypi/pyversions/arxiv-researcher.svg" alt="Python versions">
+    <img src="https://img.shields.io/pypi/pyversions/arxiv-researcher.svg?style=flat-square&labelColor=20232a&color=007ec6" alt="Python versions">
   </a>
   <a href="https://github.com/dcondrey/arXivResearcher/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/dcondrey/arXivResearcher.svg" alt="License">
+    <img src="https://img.shields.io/github/license/dcondrey/arXivResearcher.svg?style=flat-square&labelColor=20232a&color=007ec6" alt="License">
   </a>
   <a href="https://codecov.io/gh/dcondrey/arXivResearcher">
-    <img src="https://codecov.io/gh/dcondrey/arXivResearcher/branch/main/graph/badge.svg" alt="codecov">
+    <img src="https://img.shields.io/codecov/c/github/dcondrey/arXivResearcher?style=flat-square&labelColor=20232a" alt="codecov">
   </a>
 </p>
 
@@ -274,7 +275,7 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 @software{arxiv_researcher,
   author = {Condrey, David},
   title = {arXiv Researcher: Research Intelligence and Visualization Dashboard},
-  url = {https://github.com/dcondrey/arXivResearcher},
+  url = {https://github.com/dcondrey/arXivResearcher}
   year = {2024}
 }
 ```
