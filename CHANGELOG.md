@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) +
 ## [Unreleased]
 
 ### Documentation
+- Update changelog [skip ci]
 - Standardize repository presentation (#8)
 - Update changelog [skip ci]
 - Update changelog [skip ci]
