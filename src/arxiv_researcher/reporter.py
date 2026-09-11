@@ -8,7 +8,7 @@ Generate research intelligence reports in various formats.
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class ReportGenerator:
@@ -44,14 +44,14 @@ class ReportGenerator:
         else:
             raise ValueError(f"Unknown format: {format}")
 
-    def _load_analysis_data(self) -> Dict[str, Any]:
+    def _load_analysis_data(self) -> dict[str, Any]:
         """Load all analysis JSON files."""
         data = {}
 
         # Load papers count
         papers_file = os.path.join(self.data_dir, "papers.json")
         if os.path.exists(papers_file):
-            with open(papers_file, "r") as f:
+            with open(papers_file) as f:
                 papers = json.load(f)
                 data["paper_count"] = len(papers)
 
@@ -60,13 +60,13 @@ class ReportGenerator:
             for filename in os.listdir(self.analysis_dir):
                 if filename.endswith(".json"):
                     filepath = os.path.join(self.analysis_dir, filename)
-                    with open(filepath, "r") as f:
+                    with open(filepath) as f:
                         key = filename.replace("_analysis.json", "").replace(".json", "")
                         data[key] = json.load(f)
 
         return data
 
-    def _generate_markdown(self, data: Dict[str, Any]) -> str:
+    def _generate_markdown(self, data: dict[str, Any]) -> str:
         """Generate markdown report."""
         lines = [
             "# arXiv Research Intelligence Report",
@@ -161,7 +161,7 @@ class ReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_html(self, data: Dict[str, Any]) -> str:
+    def _generate_html(self, data: dict[str, Any]) -> str:
         """Generate HTML report."""
         markdown = self._generate_markdown(data)
 

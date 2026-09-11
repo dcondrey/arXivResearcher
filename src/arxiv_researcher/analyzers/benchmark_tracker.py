@@ -10,14 +10,12 @@ Track state-of-the-art benchmarks and results from Papers With Code:
 """
 
 import json
-import time
-import urllib.request
-import urllib.parse
-from collections import defaultdict, Counter
-from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Tuple, Set
 import os
-
+import time
+import urllib.parse
+import urllib.request
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta
 
 # Papers With Code API endpoints
 PWC_API_BASE = "https://paperswithcode.com/api/v1"
@@ -40,7 +38,7 @@ class BenchmarkTracker:
     - Find gaps in benchmark coverage
     """
 
-    def __init__(self, cache_dir: Optional[str] = None, rate_limit: float = 0.5):
+    def __init__(self, cache_dir: str | None = None, rate_limit: float = 0.5):
         """
         Initialize the BenchmarkTracker.
 
@@ -65,7 +63,7 @@ class BenchmarkTracker:
         cache_file = os.path.join(self.cache_dir, "pwc_benchmark_cache.json")
         if os.path.exists(cache_file):
             try:
-                with open(cache_file, "r", encoding="utf-8") as f:
+                with open(cache_file, encoding="utf-8") as f:
                     self._cache = json.load(f)
             except Exception:
                 self._cache = {}
@@ -90,7 +88,7 @@ class BenchmarkTracker:
             time.sleep(self.rate_limit - elapsed)
         self.last_api_call = time.time()
 
-    def _api_request(self, url: str, cache_key: Optional[str] = None) -> Optional[Dict]:
+    def _api_request(self, url: str, cache_key: str | None = None) -> dict | None:
         """
         Make an API request with rate limiting and optional caching.
 
@@ -127,10 +125,10 @@ class BenchmarkTracker:
 
             return data
 
-        except Exception as e:
+        except Exception:
             return None
 
-    def _paginate_api(self, base_url: str, max_pages: int = 10) -> List[Dict]:
+    def _paginate_api(self, base_url: str, max_pages: int = 10) -> list[dict]:
         """
         Fetch paginated results from PWC API.
 
@@ -170,7 +168,7 @@ class BenchmarkTracker:
     # CORE METHODS
     # =========================================================================
 
-    def fetch_benchmarks_for_papers(self, papers: List[Dict]) -> Dict:
+    def fetch_benchmarks_for_papers(self, papers: list[dict]) -> dict:
         """
         Get benchmark results for papers in the dataset.
 
@@ -233,8 +231,8 @@ class BenchmarkTracker:
                     "pwc_id": pwc_paper_id,
                     "pwc_url": pwc_paper.get("url_abs", ""),
                     "evaluations": evaluations,
-                    "tasks": list(set(e["task"] for e in evaluations if e["task"])),
-                    "datasets": list(set(e["dataset"] for e in evaluations if e["dataset"])),
+                    "tasks": list({e["task"] for e in evaluations if e["task"]}),
+                    "datasets": list({e["dataset"] for e in evaluations if e["dataset"]}),
                     "has_sota": any(e.get("is_sota") for e in evaluations),
                 }
 
@@ -269,8 +267,8 @@ class BenchmarkTracker:
             "sota_paper_ids": sota_papers,
         }
 
-    def track_sota_progression(self, task_name: str, dataset_name: Optional[str] = None,
-                                max_results: int = 100) -> Dict:
+    def track_sota_progression(self, task_name: str, dataset_name: str | None = None,
+                                max_results: int = 100) -> dict:
         """
         Track SOTA progression over time for a task.
 
@@ -340,7 +338,7 @@ class BenchmarkTracker:
                 methods_by_metric[entry["metric_name"]].append(entry)
 
         # Sort by date if available, otherwise by value
-        for metric, entries in methods_by_metric.items():
+        for _metric, entries in methods_by_metric.items():
             entries.sort(key=lambda x: x.get("evaluation_date") or "", reverse=True)
 
         # Calculate improvement metrics
@@ -392,7 +390,7 @@ class BenchmarkTracker:
         }
 
     def find_solved_benchmarks(self, min_submissions: int = 10,
-                                plateau_threshold: float = 0.01) -> Dict:
+                                plateau_threshold: float = 0.01) -> dict:
         """
         Find benchmarks where progress has plateaued (potentially "solved").
 
@@ -489,7 +487,7 @@ class BenchmarkTracker:
         }
 
     def find_active_benchmarks(self, recent_days: int = 180,
-                                min_recent_submissions: int = 5) -> Dict:
+                                min_recent_submissions: int = 5) -> dict:
         """
         Find benchmarks with recent improvements and active development.
 
@@ -599,7 +597,7 @@ class BenchmarkTracker:
         }
 
     def find_underserved_benchmarks(self, max_submissions: int = 5,
-                                     min_importance: int = 3) -> Dict:
+                                     min_importance: int = 3) -> dict:
         """
         Find tasks/benchmarks with few submissions (opportunities).
 
@@ -617,7 +615,6 @@ class BenchmarkTracker:
 
         task_importance = {}
         for task in tasks_data:
-            task_id = task.get("id", "")
             task_name = task.get("name", "")
             # Importance based on paper count
             paper_count = task.get("paper_count", 0)
@@ -681,7 +678,7 @@ class BenchmarkTracker:
             },
         }
 
-    def identify_sota_papers(self, papers: List[Dict]) -> Dict:
+    def identify_sota_papers(self, papers: list[dict]) -> dict:
         """
         Identify papers that held SOTA at some point.
 
@@ -719,7 +716,7 @@ class BenchmarkTracker:
                         for e in sota_evals
                     ],
                     "total_sota_count": len(sota_evals),
-                    "tasks": list(set(e["task"] for e in sota_evals)),
+                    "tasks": list({e["task"] for e in sota_evals}),
                 }
 
                 sota_papers.append(paper_info)
@@ -748,7 +745,7 @@ class BenchmarkTracker:
         }
 
     def compare_methods_on_benchmark(self, task_name: str, dataset_name: str,
-                                      methods: Optional[List[str]] = None) -> Dict:
+                                      methods: list[str] | None = None) -> dict:
         """
         Compare specific methods on a benchmark.
 
@@ -871,7 +868,7 @@ class BenchmarkTracker:
             "rankings_by_metric": rankings,
         }
 
-    def find_benchmark_gaps(self) -> Dict:
+    def find_benchmark_gaps(self) -> dict:
         """
         Find tasks/areas without good benchmarks.
 
@@ -965,7 +962,7 @@ class BenchmarkTracker:
     # METRICS TRACKING
     # =========================================================================
 
-    def get_benchmark_metrics(self, task_name: Optional[str] = None) -> Dict:
+    def get_benchmark_metrics(self, task_name: str | None = None) -> dict:
         """
         Get comprehensive metrics for benchmarks.
 
@@ -1101,7 +1098,7 @@ class BenchmarkTracker:
     # FULL ANALYSIS
     # =========================================================================
 
-    def analyze_benchmarks(self, papers: Optional[List[Dict]] = None) -> Dict:
+    def analyze_benchmarks(self, papers: list[dict] | None = None) -> dict:
         """
         Run comprehensive benchmark analysis.
 
@@ -1111,7 +1108,7 @@ class BenchmarkTracker:
         Returns:
             Dict with full benchmark analysis
         """
-        print(f"    Running comprehensive benchmark analysis...")
+        print("    Running comprehensive benchmark analysis...")
 
         results = {
             "active_benchmarks": self.find_active_benchmarks(),

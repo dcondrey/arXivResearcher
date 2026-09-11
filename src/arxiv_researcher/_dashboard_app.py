@@ -7,16 +7,15 @@ Usage:
     uv run streamlit run dashboard.py
 """
 
-import streamlit as st
+import json
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import json
-from pathlib import Path
-from collections import Counter, defaultdict
-from datetime import datetime
-import math
+import streamlit as st
 
 # Page configuration
 st.set_page_config(
@@ -213,7 +212,7 @@ def render_overview_page(df, stats):
         )
         fig.update_layout(
             hovermode='x unified',
-            margin=dict(l=20, r=20, t=20, b=20)
+            margin={"l": 20, "r": 20, "t": 20, "b": 20}
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -233,7 +232,7 @@ def render_overview_page(df, stats):
         )
         fig.update_layout(
             yaxis={'categoryorder': 'total ascending'},
-            margin=dict(l=20, r=20, t=20, b=20)
+            margin={"l": 20, "r": 20, "t": 20, "b": 20}
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -253,7 +252,7 @@ def render_overview_page(df, stats):
             log_y=True
         )
         fig.update_layout(
-            margin=dict(l=20, r=20, t=20, b=20),
+            margin={"l": 20, "r": 20, "t": 20, "b": 20},
             xaxis_title="Citations",
             yaxis_title="Number of Papers (log scale)"
         )
@@ -290,7 +289,7 @@ def render_overview_page(df, stats):
         )
         fig.update_layout(
             yaxis={'categoryorder': 'total ascending'},
-            margin=dict(l=20, r=20, t=20, b=20),
+            margin={"l": 20, "r": 20, "t": 20, "b": 20},
             showlegend=False
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -353,8 +352,8 @@ def render_trends_page(df, stats):
             xaxis_title="Month",
             yaxis_title="Number of Papers",
             hovermode='x unified',
-            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
-            margin=dict(l=20, r=20, t=20, b=20)
+            legend={"yanchor": "top", "y": 0.99, "xanchor": "left", "x": 0.01},
+            margin={"l": 20, "r": 20, "t": 20, "b": 20}
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -405,7 +404,7 @@ def render_trends_page(df, stats):
             )
             fig.update_layout(
                 yaxis={'categoryorder': 'total ascending'},
-                margin=dict(l=20, r=20, t=20, b=20),
+                margin={"l": 20, "r": 20, "t": 20, "b": 20},
                 showlegend=False
             )
             st.plotly_chart(fig, use_container_width=True)
@@ -425,7 +424,7 @@ def render_trends_page(df, stats):
             )
             fig.update_layout(
                 yaxis={'categoryorder': 'total descending'},
-                margin=dict(l=20, r=20, t=20, b=20),
+                margin={"l": 20, "r": 20, "t": 20, "b": 20},
                 showlegend=False
             )
             st.plotly_chart(fig, use_container_width=True)
@@ -472,7 +471,7 @@ def render_trends_page(df, stats):
     )
     fig.update_layout(
         yaxis={'categoryorder': 'total ascending'},
-        margin=dict(l=20, r=20, t=20, b=20),
+        margin={"l": 20, "r": 20, "t": 20, "b": 20},
         showlegend=False
     )
     st.plotly_chart(fig, use_container_width=True)
@@ -586,7 +585,7 @@ def render_opportunities_page(df, stats):
         )
         fig.update_layout(
             yaxis={'categoryorder': 'total ascending'},
-            margin=dict(l=20, r=20, t=20, b=20),
+            margin={"l": 20, "r": 20, "t": 20, "b": 20},
             showlegend=False
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -802,7 +801,7 @@ def render_author_network_page(df, stats):
         )
         fig.update_layout(
             yaxis={'categoryorder': 'total ascending'},
-            margin=dict(l=20, r=20, t=20, b=20),
+            margin={"l": 20, "r": 20, "t": 20, "b": 20},
             height=600
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -821,7 +820,7 @@ def render_author_network_page(df, stats):
         )
         fig.update_layout(
             yaxis={'categoryorder': 'total ascending'},
-            margin=dict(l=20, r=20, t=20, b=20),
+            margin={"l": 20, "r": 20, "t": 20, "b": 20},
             height=600
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -855,7 +854,7 @@ def render_author_network_page(df, stats):
         labels={'Coauthors': 'Number of Coauthors', 'Papers': 'Number of Papers'},
         color_continuous_scale='Viridis'
     )
-    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20))
+    fig.update_layout(margin={"l": 20, "r": 20, "t": 20, "b": 20})
     st.plotly_chart(fig, use_container_width=True)
 
     # Full author table
@@ -919,7 +918,7 @@ def render_success_factors_page(df, stats):
             text='Avg Citations'
         )
         fig.update_traces(textposition='outside')
-        fig.update_layout(margin=dict(l=20, r=20, t=20, b=20), showlegend=False)
+        fig.update_layout(margin={"l": 20, "r": 20, "t": 20, "b": 20}, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -948,7 +947,7 @@ def render_success_factors_page(df, stats):
             names='Type',
             title='Distribution of Cross-listing'
         )
-        fig.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+        fig.update_layout(margin={"l": 20, "r": 20, "t": 40, "b": 20})
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -960,7 +959,7 @@ def render_success_factors_page(df, stats):
             text='Avg Citations'
         )
         fig.update_traces(textposition='outside')
-        fig.update_layout(margin=dict(l=20, r=20, t=20, b=20), showlegend=False)
+        fig.update_layout(margin={"l": 20, "r": 20, "t": 20, "b": 20}, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
     # Abstract length analysis
@@ -996,7 +995,7 @@ def render_success_factors_page(df, stats):
         text='Avg Citations'
     )
     fig.update_traces(textposition='outside')
-    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20), showlegend=False)
+    fig.update_layout(margin={"l": 20, "r": 20, "t": 20, "b": 20}, showlegend=False)
     st.plotly_chart(fig, use_container_width=True)
 
     # Title characteristics
@@ -1041,7 +1040,7 @@ def render_success_factors_page(df, stats):
         )
         fig.add_hline(y=1, line_dash="dash", line_color="gray")
         fig.update_traces(textposition='outside')
-        fig.update_layout(margin=dict(l=20, r=20, t=20, b=20), showlegend=False)
+        fig.update_layout(margin={"l": 20, "r": 20, "t": 20, "b": 20}, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
     # Key insights

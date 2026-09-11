@@ -7,14 +7,13 @@ Collects papers from arXiv and enriches with data from external sources.
 
 import json
 import os
+import re
 import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
-import re
-
+from typing import Any
 
 # API Endpoints
 ARXIV_API = "http://export.arxiv.org/api/query"
@@ -41,7 +40,7 @@ class RateLimiter:
     """Simple rate limiter for API calls."""
 
     def __init__(self) -> None:
-        self.last_call: Dict[str, float] = {}
+        self.last_call: dict[str, float] = {}
 
     def wait(self, api_name: str, min_interval: float) -> None:
         """Wait if needed to respect rate limits."""
@@ -81,12 +80,12 @@ class ArxivCollector:
 
     def collect(
         self,
-        categories: Optional[Union[List[str], str]] = None,
+        categories: list[str] | str | None = None,
         max_results: int = 500,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         resume: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Collect papers from arXiv.
 
         Args:
@@ -111,13 +110,13 @@ class ArxivCollector:
             start_date = end_date - timedelta(days=365)
 
         # Check for checkpoint
-        all_papers: List[Dict[str, Any]] = []
-        completed_categories: List[str] = []
+        all_papers: list[dict[str, Any]] = []
+        completed_categories: list[str] = []
         checkpoint_file = os.path.join(self.output_dir, "checkpoint.json")
 
         if resume and os.path.exists(checkpoint_file):
             print(f"Resuming from checkpoint: {checkpoint_file}")
-            with open(checkpoint_file, "r") as f:
+            with open(checkpoint_file) as f:
                 checkpoint = json.load(f)
             all_papers = checkpoint.get("papers", [])
             completed_categories = checkpoint.get("completed_categories", [])
@@ -141,7 +140,7 @@ class ArxivCollector:
         # Collect from each category
         for i, category in enumerate(categories, 1):
             print(f"\n[{i}/{len(categories)}] {category}")
-            category_papers: List[Dict[str, Any]] = []
+            category_papers: list[dict[str, Any]] = []
 
             for chunk_start, chunk_end in date_chunks:
                 papers = self._fetch_arxiv_papers(
@@ -184,7 +183,7 @@ class ArxivCollector:
 
     def _generate_date_chunks(
         self, start_date: datetime, end_date: datetime, months: int = 24
-    ) -> List[tuple]:
+    ) -> list[tuple]:
         """Generate date range chunks."""
         chunks = []
         current = start_date
@@ -202,7 +201,7 @@ class ArxivCollector:
         start_date: str,
         end_date: str,
         max_results: int = 500,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Fetch papers from arXiv API."""
         papers = []
         batch_size = 100
@@ -265,7 +264,7 @@ class ArxivCollector:
 
     def _parse_arxiv_entry(
         self, entry: ET.Element, ns: dict, default_category: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Parse an arXiv XML entry into a paper dict."""
         id_elem = entry.find("atom:id", ns)
         paper_id = id_elem.text.split("/abs/")[-1] if id_elem is not None else ""
@@ -308,7 +307,7 @@ class ArxivCollector:
             "pdf_url": f"https://arxiv.org/pdf/{paper_id}.pdf",
         }
 
-    def _enrich_with_s2(self, papers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _enrich_with_s2(self, papers: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Enrich papers with Semantic Scholar data."""
         batch_size = 100
 
@@ -340,7 +339,7 @@ class ArxivCollector:
                 with urllib.request.urlopen(req, timeout=30) as response:
                     results = json.loads(response.read().decode("utf-8"))
 
-                for paper, result in zip(batch, results):
+                for paper, result in zip(batch, results, strict=False):
                     if result:
                         paper["citation_count"] = result.get("citationCount", 0)
                         paper["influential_citations"] = result.get(
@@ -358,7 +357,7 @@ class ArxivCollector:
         return papers
 
     def _save_checkpoint(
-        self, papers: List[Dict[str, Any]], completed_categories: List[str]
+        self, papers: list[dict[str, Any]], completed_categories: list[str]
     ) -> None:
         """Save checkpoint file."""
         checkpoint_file = os.path.join(self.output_dir, "checkpoint.json")
@@ -370,7 +369,7 @@ class ArxivCollector:
         with open(checkpoint_file, "w") as f:
             json.dump(checkpoint, f)
 
-    def _save_results(self, papers: List[Dict[str, Any]]) -> None:
+    def _save_results(self, papers: list[dict[str, Any]]) -> None:
         """Save final results to JSON and CSV."""
         # JSON
         json_file = os.path.join(self.output_dir, "papers.json")
