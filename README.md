@@ -8,6 +8,8 @@
 <br clear="left">
 
 <p align="center">
+  <a href="https://github.com/dcondrey/arXivResearcher/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/dcondrey/arXivResearcher/ci.yml?style=flat-square&labelColor=20232a&branch=main&label=CI" alt="CI"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/dcondrey/arXivResearcher"><img src="https://img.shields.io/ossf-scorecard/github.com/dcondrey/arXivResearcher?style=flat-square&labelColor=20232a&label=OpenSSF" alt="OpenSSF Scorecard"></a>
   <a href="https://pypi.org/project/arxiv-researcher/"><img src="https://img.shields.io/pypi/v/arxiv-researcher.svg?style=flat-square&labelColor=20232a&color=007ec6" alt="PyPI version"></a>
   <a href="https://pypi.org/project/arxiv-researcher/"><img src="https://img.shields.io/pypi/pyversions/arxiv-researcher.svg?style=flat-square&labelColor=20232a&color=007ec6" alt="Python versions"></a>
   <a href="https://codecov.io/gh/dcondrey/arXivResearcher"><img src="https://img.shields.io/codecov/c/github/dcondrey/arXivResearcher?style=flat-square&labelColor=20232a&label=coverage" alt="Coverage"></a>
