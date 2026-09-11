@@ -9,16 +9,14 @@ Download and analyze arXiv PDFs for deeper insights:
 - Paper structure analysis
 """
 
-import re
+import importlib.util
 import os
+import re
 import time
-import hashlib
-from pathlib import Path
 from collections import Counter, defaultdict
-from typing import List, Dict, Tuple, Optional, Set
-from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
-
+from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 # Section header patterns - handles various formats:
 # "5. Limitations", "5 Limitations", "LIMITATIONS", "5.1 Limitations", etc.
@@ -124,7 +122,7 @@ INLINE_FUTURE_WORK_PATTERNS = [
 class FullTextAnalyzer:
     """Download and analyze arXiv PDFs for deep text extraction."""
 
-    def __init__(self, cache_dir: Optional[str] = None, rate_limit: float = 3.0):
+    def __init__(self, cache_dir: str | None = None, rate_limit: float = 3.0):
         """
         Initialize the full-text analyzer.
 
@@ -160,18 +158,16 @@ class FullTextAnalyzer:
             re.compile(p, re.IGNORECASE) for p in INLINE_FUTURE_WORK_PATTERNS
         ]
 
-        # Try to import PDF library
+        # Pick whichever PDF library is installed. Probed rather than imported,
+        # so the module is only loaded when a PDF is actually read.
         self._pdf_library = None
-        try:
-            import fitz  # PyMuPDF
+        if importlib.util.find_spec("fitz") is not None:
             self._pdf_library = "pymupdf"
-        except ImportError:
-            try:
-                import pdfplumber
-                self._pdf_library = "pdfplumber"
-            except ImportError:
-                print("Warning: Neither PyMuPDF (fitz) nor pdfplumber is installed.")
-                print("Install with: pip install pymupdf  or  pip install pdfplumber")
+        elif importlib.util.find_spec("pdfplumber") is not None:
+            self._pdf_library = "pdfplumber"
+        else:
+            print("Warning: Neither PyMuPDF (fitz) nor pdfplumber is installed.")
+            print("Install with: pip install pymupdf  or  pip install pdfplumber")
 
     def _rate_limit_wait(self):
         """Wait to respect rate limiting."""
@@ -200,7 +196,7 @@ class FullTextAnalyzer:
         safe_id = arxiv_id.replace("/", "_").replace(":", "_")
         return self.text_cache_dir / f"{safe_id}.txt"
 
-    def download_pdf(self, arxiv_id: str, cache_dir: Optional[str] = None) -> Optional[Path]:
+    def download_pdf(self, arxiv_id: str, cache_dir: str | None = None) -> Path | None:
         """
         Download a PDF from arXiv with caching.
 
@@ -257,7 +253,7 @@ class FullTextAnalyzer:
             print(f"Error downloading {arxiv_id}: {e}")
             return None
 
-    def extract_text(self, pdf_path: str | Path) -> Optional[str]:
+    def extract_text(self, pdf_path: str | Path) -> str | None:
         """
         Extract full text from a PDF file.
 
@@ -278,7 +274,7 @@ class FullTextAnalyzer:
         text_cache_path = self._get_cached_text_path(arxiv_id)
 
         if text_cache_path.exists():
-            with open(text_cache_path, "r", encoding="utf-8") as f:
+            with open(text_cache_path, encoding="utf-8") as f:
                 return f.read()
 
         # Extract text based on available library
@@ -299,7 +295,7 @@ class FullTextAnalyzer:
 
         return text
 
-    def _extract_with_pymupdf(self, pdf_path: Path) -> Optional[str]:
+    def _extract_with_pymupdf(self, pdf_path: Path) -> str | None:
         """Extract text using PyMuPDF."""
         try:
             import fitz
@@ -315,7 +311,7 @@ class FullTextAnalyzer:
             print(f"PyMuPDF extraction failed for {pdf_path}: {e}")
             return None
 
-    def _extract_with_pdfplumber(self, pdf_path: Path) -> Optional[str]:
+    def _extract_with_pdfplumber(self, pdf_path: Path) -> str | None:
         """Extract text using pdfplumber."""
         try:
             import pdfplumber
@@ -333,7 +329,7 @@ class FullTextAnalyzer:
             print(f"pdfplumber extraction failed for {pdf_path}: {e}")
             return None
 
-    def extract_sections(self, text: str) -> Dict[str, str]:
+    def extract_sections(self, text: str) -> dict[str, str]:
         """
         Parse text into sections.
 
@@ -392,7 +388,7 @@ class FullTextAnalyzer:
 
         return sections
 
-    def extract_limitations(self, papers: List[Dict]) -> List[Dict]:
+    def extract_limitations(self, papers: list[dict]) -> list[dict]:
         """
         Extract limitation sections from papers - goldmine for research gaps!
 
@@ -455,7 +451,7 @@ class FullTextAnalyzer:
 
         return results
 
-    def _find_inline_limitations(self, text: str, context_chars: int = 200) -> List[str]:
+    def _find_inline_limitations(self, text: str, context_chars: int = 200) -> list[str]:
         """Find inline limitation mentions with context."""
         mentions = []
 
@@ -471,7 +467,7 @@ class FullTextAnalyzer:
 
         return mentions[:10]  # Limit to 10 mentions
 
-    def _extract_limitation_themes(self, text: str) -> List[str]:
+    def _extract_limitation_themes(self, text: str) -> list[str]:
         """Extract common limitation themes from text."""
         themes = []
 
@@ -495,7 +491,7 @@ class FullTextAnalyzer:
 
         return themes
 
-    def extract_future_work(self, papers: List[Dict]) -> List[Dict]:
+    def extract_future_work(self, papers: list[dict]) -> list[dict]:
         """
         Extract future work sections - authors telling you what to write!
 
@@ -561,7 +557,7 @@ class FullTextAnalyzer:
 
         return results
 
-    def _find_inline_future_work(self, text: str, context_chars: int = 250) -> List[str]:
+    def _find_inline_future_work(self, text: str, context_chars: int = 250) -> list[str]:
         """Find inline future work mentions with context."""
         mentions = []
 
@@ -577,7 +573,7 @@ class FullTextAnalyzer:
 
         return mentions[:10]
 
-    def _extract_future_directions(self, text: str) -> List[str]:
+    def _extract_future_directions(self, text: str) -> list[str]:
         """Extract specific future research directions."""
         directions = []
 
@@ -608,7 +604,7 @@ class FullTextAnalyzer:
 
         return directions[:15]
 
-    def extract_methods_detailed(self, text: str) -> Dict[str, any]:
+    def extract_methods_detailed(self, text: str) -> dict[str, any]:
         """
         Extract detailed method information beyond abstract.
 
@@ -690,7 +686,7 @@ class FullTextAnalyzer:
 
         return result
 
-    def analyze_paper_structure(self, papers: List[Dict]) -> Dict:
+    def analyze_paper_structure(self, papers: list[dict]) -> dict:
         """
         Analyze paper structure statistics.
 
@@ -808,12 +804,12 @@ class FullTextAnalyzer:
 
         return results
 
-    def _get_paper_text(self, arxiv_id: str) -> Optional[str]:
+    def _get_paper_text(self, arxiv_id: str) -> str | None:
         """Get paper text from cache or by downloading/extracting."""
         # Check text cache first
         text_path = self._get_cached_text_path(arxiv_id)
         if text_path.exists():
-            with open(text_path, "r", encoding="utf-8") as f:
+            with open(text_path, encoding="utf-8") as f:
                 return f.read()
 
         # Check if PDF is cached
@@ -828,7 +824,7 @@ class FullTextAnalyzer:
 
         return None
 
-    def batch_download(self, arxiv_ids: List[str], show_progress: bool = True) -> Dict[str, Path]:
+    def batch_download(self, arxiv_ids: list[str], show_progress: bool = True) -> dict[str, Path]:
         """
         Download multiple PDFs with progress indication.
 
@@ -858,7 +854,7 @@ class FullTextAnalyzer:
 
         return results
 
-    def batch_extract_text(self, pdf_paths: Dict[str, Path], show_progress: bool = True) -> Dict[str, str]:
+    def batch_extract_text(self, pdf_paths: dict[str, Path], show_progress: bool = True) -> dict[str, str]:
         """
         Extract text from multiple PDFs with progress indication.
 
@@ -891,7 +887,7 @@ class FullTextAnalyzer:
 
         return results
 
-    def analyze_papers(self, papers: List[Dict], download_missing: bool = False) -> Dict:
+    def analyze_papers(self, papers: list[dict], download_missing: bool = False) -> dict:
         """
         Run full text analysis on a list of papers.
 
@@ -954,7 +950,7 @@ class FullTextAnalyzer:
             },
         }
 
-    def clear_cache(self, older_than_days: Optional[int] = None):
+    def clear_cache(self, older_than_days: int | None = None):
         """
         Clear the cache directory.
 

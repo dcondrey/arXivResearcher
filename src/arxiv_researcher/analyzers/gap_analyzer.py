@@ -9,9 +9,7 @@ Identify research opportunities:
 - Survey opportunities
 """
 
-from collections import defaultdict, Counter
-from typing import List, Dict, Set, Tuple
-import math
+from collections import Counter, defaultdict
 
 
 class GapAnalyzer:
@@ -20,7 +18,7 @@ class GapAnalyzer:
     def __init__(self):
         pass
 
-    def analyze_gaps(self, papers: List[Dict]) -> Dict:
+    def analyze_gaps(self, papers: list[dict]) -> dict:
         """Run comprehensive gap analysis."""
         print(f"    Analyzing research gaps for {len(papers)} papers...")
 
@@ -34,7 +32,7 @@ class GapAnalyzer:
             "opportunity_scores": self.compute_opportunity_scores(papers),
         }
 
-    def find_underexplored_intersections(self, papers: List[Dict]) -> Dict:
+    def find_underexplored_intersections(self, papers: list[dict]) -> dict:
         """Find category pairs that are underexplored relative to their components."""
         # Count individual categories and pairs
         category_counts = Counter()
@@ -83,7 +81,7 @@ class GapAnalyzer:
 
         for paper in papers:
             categories = paper.get("category_list", [])
-            top_levels = list(set(c.split(".")[0] for c in categories))
+            top_levels = list({c.split(".")[0] for c in categories})
 
             for tl in top_levels:
                 top_level_counts[tl] += 1
@@ -113,7 +111,7 @@ class GapAnalyzer:
             "cross_discipline_gaps": cross_discipline[:20],
         }
 
-    def find_method_domain_gaps(self, papers: List[Dict]) -> Dict:
+    def find_method_domain_gaps(self, papers: list[dict]) -> dict:
         """Find methods not yet applied to certain domains."""
         method_by_category = defaultdict(Counter)
         category_totals = Counter()
@@ -166,7 +164,7 @@ class GapAnalyzer:
             }
         }
 
-    def find_reproducibility_gaps(self, papers: List[Dict]) -> Dict:
+    def find_reproducibility_gaps(self, papers: list[dict]) -> dict:
         """Find highly-cited papers lacking code or reproduction attempts."""
         # Papers with high citations but no code
         no_code_high_cited = []
@@ -218,7 +216,7 @@ class GapAnalyzer:
             "lowest_code_categories": category_code_rates[:10],
         }
 
-    def find_survey_opportunities(self, papers: List[Dict]) -> Dict:
+    def find_survey_opportunities(self, papers: list[dict]) -> dict:
         """Find categories/topics that need surveys."""
         # Count papers and surveys by category
         category_stats = defaultdict(lambda: {"papers": 0, "surveys": 0, "recent_papers": 0})
@@ -288,7 +286,7 @@ class GapAnalyzer:
             "method_survey_opportunities": method_opportunities[:20],
         }
 
-    def find_dataset_gaps(self, papers: List[Dict]) -> Dict:
+    def find_dataset_gaps(self, papers: list[dict]) -> dict:
         """Find datasets not used in certain domains, and domains lacking benchmarks."""
         dataset_by_category = defaultdict(Counter)
         category_totals = Counter()
@@ -353,7 +351,7 @@ class GapAnalyzer:
             "dataset_transfer_opportunities": transfer_opportunities[:30],
         }
 
-    def find_application_gaps(self, papers: List[Dict]) -> Dict:
+    def find_application_gaps(self, papers: list[dict]) -> dict:
         """Find methods that could be applied to new domains."""
         # Check which methods have been applied to real-world problems
         method_applications = defaultdict(lambda: {"total": 0, "applied": 0})
@@ -385,7 +383,7 @@ class GapAnalyzer:
             "methods_needing_applications": application_gaps[:30],
         }
 
-    def compute_opportunity_scores(self, papers: List[Dict]) -> Dict:
+    def compute_opportunity_scores(self, papers: list[dict]) -> dict:
         """Compute overall opportunity scores for different research directions."""
         opportunities = []
 
@@ -452,7 +450,7 @@ class GapAnalyzer:
             ],
         }
 
-    def _get_recommendation(self, metrics: Dict, velocity: float, survey_rate: float) -> str:
+    def _get_recommendation(self, metrics: dict, velocity: float, survey_rate: float) -> str:
         """Generate a recommendation based on metrics."""
         if velocity > 1 and survey_rate < 0.02:
             return "Hot topic needs survey"

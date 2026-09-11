@@ -9,9 +9,8 @@ Analyze citation networks and co-authorship patterns:
 - Bridge papers identification
 """
 
-from collections import defaultdict, Counter
-from typing import List, Dict, Set, Tuple, Optional
 import math
+from collections import Counter, defaultdict
 
 
 class NetworkAnalyzer:
@@ -24,7 +23,7 @@ class NetworkAnalyzer:
         self.author_papers = defaultdict(list)  # author -> papers
         self.paper_authors = {}  # paper -> authors
 
-    def build_networks(self, papers: List[Dict]) -> Dict:
+    def build_networks(self, papers: list[dict]) -> dict:
         """Build all networks from paper data."""
         print(f"    Building networks for {len(papers)} papers...")
 
@@ -55,7 +54,7 @@ class NetworkAnalyzer:
 
         return self.compute_all_metrics(papers)
 
-    def compute_all_metrics(self, papers: List[Dict]) -> Dict:
+    def compute_all_metrics(self, papers: list[dict]) -> dict:
         """Compute all network metrics."""
         return {
             "author_metrics": self.compute_author_metrics(),
@@ -64,7 +63,7 @@ class NetworkAnalyzer:
             "network_statistics": self.compute_network_stats(),
         }
 
-    def compute_author_metrics(self) -> Dict:
+    def compute_author_metrics(self) -> dict:
         """Compute author-level network metrics."""
         metrics = {}
 
@@ -106,11 +105,10 @@ class NetworkAnalyzer:
             "total_authors": len(metrics),
         }
 
-    def compute_paper_metrics(self, papers: List[Dict]) -> Dict:
+    def compute_paper_metrics(self, papers: list[dict]) -> dict:
         """Compute paper-level network metrics."""
         paper_metrics = {}
 
-        paper_lookup = {p.get("arxiv_id", ""): p for p in papers}
 
         for paper in papers:
             arxiv_id = paper.get("arxiv_id", "")
@@ -131,7 +129,7 @@ class NetworkAnalyzer:
 
             # Cross-category (papers that appear in multiple categories)
             categories = paper.get("category_list", [])
-            is_cross_category = len(set(c.split(".")[0] for c in categories)) > 1
+            is_cross_category = len({c.split(".")[0] for c in categories}) > 1
 
             paper_metrics[arxiv_id] = {
                 "cited_by_count_internal": in_degree,  # Within dataset
@@ -143,7 +141,7 @@ class NetworkAnalyzer:
 
         return paper_metrics
 
-    def analyze_collaboration_patterns(self, papers: List[Dict]) -> Dict:
+    def analyze_collaboration_patterns(self, papers: list[dict]) -> dict:
         """Analyze collaboration patterns over time and by category."""
         patterns = {
             "by_category": defaultdict(lambda: {"papers": 0, "total_authors": 0, "solo": 0}),
@@ -181,21 +179,21 @@ class NetworkAnalyzer:
 
             # Cross-institution (heuristic: different affiliations)
             institutions = paper.get("institutions", "").split("; ")
-            if len(set(i.strip() for i in institutions if i.strip())) > 1:
+            if len({i.strip() for i in institutions if i.strip()}) > 1:
                 patterns["cross_institution"] += 1
 
             # International (multiple countries)
             countries = paper.get("institution_countries", "").split(", ")
-            if len(set(c.strip() for c in countries if c.strip())) > 1:
+            if len({c.strip() for c in countries if c.strip()}) > 1:
                 patterns["international_collaboration"] += 1
 
         # Compute averages
-        for cat, data in patterns["by_category"].items():
+        for _cat, data in patterns["by_category"].items():
             if data["papers"] > 0:
                 data["avg_team_size"] = round(data["total_authors"] / data["papers"], 2)
                 data["solo_rate"] = round(data["solo"] / data["papers"] * 100, 1)
 
-        for year, data in patterns["by_year"].items():
+        for _year, data in patterns["by_year"].items():
             if data["papers"] > 0:
                 data["avg_team_size"] = round(data["total_authors"] / data["papers"], 2)
 
@@ -205,7 +203,7 @@ class NetworkAnalyzer:
 
         return patterns
 
-    def compute_network_stats(self) -> Dict:
+    def compute_network_stats(self) -> dict:
         """Compute overall network statistics."""
         # Author network stats
         author_degrees = [len(coauthors) for coauthors in self.coauthor_graph.values()]
@@ -236,7 +234,7 @@ class NetworkAnalyzer:
             }
         }
 
-    def _find_components(self, graph: Dict[str, Set[str]]) -> List[Set[str]]:
+    def _find_components(self, graph: dict[str, set[str]]) -> list[set[str]]:
         """Find connected components using BFS."""
         visited = set()
         components = []
@@ -265,8 +263,8 @@ class NetworkAnalyzer:
 
         return components
 
-    def _approximate_betweenness(self, graph: Dict[str, Set[str]],
-                                  sample_size: int = 100) -> Dict[str, float]:
+    def _approximate_betweenness(self, graph: dict[str, set[str]],
+                                  sample_size: int = 100) -> dict[str, float]:
         """Approximate betweenness centrality using sampling."""
         nodes = list(graph.keys())
         if len(nodes) < 3:
@@ -319,7 +317,7 @@ class NetworkAnalyzer:
 
         return dict(betweenness)
 
-    def find_bridge_papers(self, papers: List[Dict], top_n: int = 50) -> List[Dict]:
+    def find_bridge_papers(self, papers: list[dict], top_n: int = 50) -> list[dict]:
         """Find papers that bridge different research communities."""
         bridge_scores = []
 
@@ -329,19 +327,16 @@ class NetworkAnalyzer:
             authors = paper.get("author_list", [])
 
             # Category bridging score
-            unique_top_cats = len(set(c.split(".")[0] for c in categories))
+            unique_top_cats = len({c.split(".")[0] for c in categories})
 
             # Author network bridging
-            author_communities = set()
             for author in authors:
                 # Use primary category of author's most common papers
-                author_cats = []
-                for pid in self.author_papers.get(author, []):
+                for _pid in self.author_papers.get(author, []):
                     # Would need to look up paper categories
                     pass
 
             # Methods bridging (from text analysis)
-            methods = paper.get("methods_detected", [])
 
             score = (
                 unique_top_cats * 2 +
@@ -361,7 +356,7 @@ class NetworkAnalyzer:
         bridge_scores.sort(key=lambda x: x["bridge_score"], reverse=True)
         return bridge_scores[:top_n]
 
-    def find_influential_authors(self, papers: List[Dict], top_n: int = 100) -> List[Dict]:
+    def find_influential_authors(self, papers: list[dict], top_n: int = 100) -> list[dict]:
         """Find most influential authors based on network position and citations."""
         author_influence = defaultdict(lambda: {
             "total_citations": 0,
@@ -393,7 +388,7 @@ class NetworkAnalyzer:
             data["categories"] = dict(data["categories"].most_common(5))
 
         # Compute composite influence score
-        for author, data in author_influence.items():
+        for _author, data in author_influence.items():
             data["influence_score"] = (
                 math.log(1 + data["total_citations"]) * 2 +
                 math.log(1 + data["paper_count"]) * 1.5 +
@@ -408,7 +403,7 @@ class NetworkAnalyzer:
 
         return [{"name": a, **d} for a, d in sorted_authors[:top_n]]
 
-    def export_for_visualization(self, papers: List[Dict], output_dir: str):
+    def export_for_visualization(self, papers: list[dict], output_dir: str):
         """Export network data in formats suitable for visualization."""
         import json
         import os
@@ -421,7 +416,7 @@ class NetworkAnalyzer:
             key=lambda x: len(x[1]),
             reverse=True
         )[:500]
-        top_author_set = set(a for a, _ in top_authors)
+        top_author_set = {a for a, _ in top_authors}
 
         coauthor_nodes = []
         coauthor_edges = []

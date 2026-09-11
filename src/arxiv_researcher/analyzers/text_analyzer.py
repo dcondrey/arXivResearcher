@@ -11,11 +11,9 @@ Extract insights from paper titles and abstracts:
 Supports configurable term filtering and merging via YAML config files.
 """
 
-import re
 import math
-import os
+import re
 from collections import Counter, defaultdict
-from typing import List, Dict, Set, Tuple, Optional
 from pathlib import Path
 
 # Try to load YAML for config files
@@ -254,7 +252,7 @@ NOVELTY_PHRASES = [
 class TextAnalyzer:
     """Analyze paper text to extract insights."""
 
-    def __init__(self, config_dir: Optional[str] = None):
+    def __init__(self, config_dir: str | None = None):
         """
         Initialize the text analyzer.
 
@@ -282,20 +280,20 @@ class TextAnalyzer:
             return str(cwd_config)
         return str(config_dir)
 
-    def _load_yaml_config(self, filename: str) -> Dict:
+    def _load_yaml_config(self, filename: str) -> dict:
         """Load a YAML config file."""
         if not HAS_YAML:
             return {}
         config_path = Path(self.config_dir) / filename
         if config_path.exists():
             try:
-                with open(config_path, 'r') as f:
+                with open(config_path) as f:
                     return yaml.safe_load(f) or {}
             except Exception as e:
                 print(f"Warning: Could not load {filename}: {e}")
         return {}
 
-    def _load_filter_words(self) -> Set[str]:
+    def _load_filter_words(self) -> set[str]:
         """Load all filter words from config."""
         config = self._load_yaml_config("text_filters.yaml")
         filter_words = set()
@@ -308,18 +306,18 @@ class TextAnalyzer:
 
         return filter_words
 
-    def _load_filter_patterns(self) -> List[str]:
+    def _load_filter_patterns(self) -> list[str]:
         """Load regex filter patterns from config."""
         config = self._load_yaml_config("text_filters.yaml")
         return config.get('filter_patterns', [])
 
-    def _load_term_merges(self) -> Dict[str, str]:
+    def _load_term_merges(self) -> dict[str, str]:
         """Load term merges from config and build variant-to-canonical mapping."""
         config = self._load_yaml_config("term_merges.yaml")
         merges = {}
 
         # Process each category
-        for category_name, category_data in config.items():
+        for _category_name, category_data in config.items():
             if isinstance(category_data, dict):
                 for canonical, variants in category_data.items():
                     if isinstance(variants, list):
@@ -358,7 +356,7 @@ class TextAnalyzer:
 
         return False
 
-    def process_keywords(self, keywords: List[Tuple[str, float]]) -> List[Tuple[str, float]]:
+    def process_keywords(self, keywords: list[tuple[str, float]]) -> list[tuple[str, float]]:
         """
         Process a list of (keyword, score) tuples:
         1. Filter out unwanted terms
@@ -387,7 +385,7 @@ class TextAnalyzer:
         result = sorted(canonical_scores.items(), key=lambda x: x[1], reverse=True)
         return result
 
-    def _load_stopwords(self) -> Set[str]:
+    def _load_stopwords(self) -> set[str]:
         """Load stopwords list."""
         # Common English stopwords + academic filler words
         return {
@@ -417,7 +415,7 @@ class TextAnalyzer:
             "therefore", "moreover", "furthermore", "additionally", "specifically",
         }
 
-    def analyze_paper(self, paper: Dict) -> Dict:
+    def analyze_paper(self, paper: dict) -> dict:
         """Run all analyses on a single paper."""
         title = paper.get("title", "")
         abstract = paper.get("abstract", "")
@@ -447,7 +445,7 @@ class TextAnalyzer:
             "has_code_mention": bool(re.search(r"\bcode\b.*\bavailable\b|\bgithub\b|\bopen-?source\b", text)),
         }
 
-    def extract_methods(self, text: str) -> List[str]:
+    def extract_methods(self, text: str) -> list[str]:
         """Extract mentioned methods/techniques."""
         found = []
         for method, pattern in METHODS_PATTERNS.items():
@@ -455,7 +453,7 @@ class TextAnalyzer:
                 found.append(method)
         return found
 
-    def extract_datasets(self, text: str) -> List[str]:
+    def extract_datasets(self, text: str) -> list[str]:
         """Extract mentioned datasets."""
         found = []
         for dataset, pattern in DATASET_PATTERNS.items():
@@ -463,7 +461,7 @@ class TextAnalyzer:
                 found.append(dataset)
         return found
 
-    def classify_contribution(self, text: str) -> List[str]:
+    def classify_contribution(self, text: str) -> list[str]:
         """Classify the type of contribution."""
         types = []
         for ctype, patterns in CONTRIBUTION_PATTERNS.items():
@@ -483,7 +481,7 @@ class TextAnalyzer:
         # Normalize to 0-1 range
         return min(matches / 5.0, 1.0)
 
-    def extract_keywords_single(self, title: str, abstract: str, top_n: int = 10) -> List[str]:
+    def extract_keywords_single(self, title: str, abstract: str, top_n: int = 10) -> list[str]:
         """Extract keywords from a single paper using statistical methods with filtering."""
         text = f"{title} {title} {title} {abstract}"  # Weight title higher
 
@@ -528,7 +526,7 @@ class TextAnalyzer:
         scored.sort(key=lambda x: x[1], reverse=True)
         seen_words = set()
         keywords = []
-        for kw, score in scored:
+        for kw, _score in scored:
             words_in_kw = set(kw.split())
             if not words_in_kw & seen_words:
                 keywords.append(kw)
@@ -538,7 +536,7 @@ class TextAnalyzer:
 
         return keywords
 
-    def compute_corpus_tfidf(self, papers: List[Dict], top_n: int = 20) -> Dict[str, List[Tuple[str, float]]]:
+    def compute_corpus_tfidf(self, papers: list[dict], top_n: int = 20) -> dict[str, list[tuple[str, float]]]:
         """Compute TF-IDF keywords for each paper in a corpus."""
         # Build document frequency
         doc_freq = Counter()
@@ -574,7 +572,7 @@ class TextAnalyzer:
 
         return results
 
-    def extract_corpus_topics(self, papers: List[Dict], n_topics: int = 20) -> Dict:
+    def extract_corpus_topics(self, papers: list[dict], n_topics: int = 20) -> dict:
         """Extract corpus-wide topics using co-occurrence with filtering and normalization."""
         # Build co-occurrence matrix
         word_cooccur = defaultdict(Counter)
@@ -618,7 +616,6 @@ class TextAnalyzer:
                       if w not in used_words and c >= 3 and not self.should_filter(w)][:5]
 
             if related:
-                topic = [word] + related
                 topics.append({
                     "core_word": word,
                     "related_words": related,
@@ -636,8 +633,8 @@ class TextAnalyzer:
 
         return {"topics": topics, "word_frequencies": dict(list(filtered_freq.items())[:100])}
 
-    def find_emerging_terms(self, papers: List[Dict],
-                           time_field: str = "published_date") -> Dict[str, Dict]:
+    def find_emerging_terms(self, papers: list[dict],
+                           time_field: str = "published_date") -> dict[str, dict]:
         """Find terms that are emerging (growing in frequency over time) with filtering and normalization."""
         # Group papers by time period
         periods = defaultdict(list)
@@ -717,7 +714,7 @@ class TextAnalyzer:
             "recent_period": f"{recent_periods[0]} to {recent_periods[-1]}",
         }
 
-    def analyze_all(self, papers: List[Dict]) -> Tuple[List[Dict], Dict]:
+    def analyze_all(self, papers: list[dict]) -> tuple[list[dict], dict]:
         """Run all analyses on a corpus of papers."""
         print(f"    Analyzing text for {len(papers)} papers...")
 
@@ -737,21 +734,21 @@ class TextAnalyzer:
 
         return papers, corpus_analysis
 
-    def _count_methods(self, papers: List[Dict]) -> Dict[str, int]:
+    def _count_methods(self, papers: list[dict]) -> dict[str, int]:
         """Count method frequencies across corpus."""
         counts = Counter()
         for paper in papers:
             counts.update(paper.get("methods_detected", []))
         return dict(counts.most_common(50))
 
-    def _count_datasets(self, papers: List[Dict]) -> Dict[str, int]:
+    def _count_datasets(self, papers: list[dict]) -> dict[str, int]:
         """Count dataset frequencies across corpus."""
         counts = Counter()
         for paper in papers:
             counts.update(paper.get("datasets_mentioned", []))
         return dict(counts.most_common(50))
 
-    def _count_contributions(self, papers: List[Dict]) -> Dict[str, int]:
+    def _count_contributions(self, papers: list[dict]) -> dict[str, int]:
         """Count contribution type frequencies."""
         counts = Counter()
         for paper in papers:

@@ -15,9 +15,7 @@ Build and analyze citation networks using Semantic Scholar API:
 import json
 import os
 import time
-import hashlib
-from collections import defaultdict, Counter
-from typing import List, Dict, Set, Tuple, Optional, Any
+from collections import Counter
 from pathlib import Path
 
 try:
@@ -55,7 +53,7 @@ class CitationGraphAnalyzer:
     RATE_LIMIT_SECONDS = 1.0
     BATCH_SIZE = 100  # Max papers per batch request
 
-    def __init__(self, cache_dir: Optional[str] = None, api_key: Optional[str] = None):
+    def __init__(self, cache_dir: str | None = None, api_key: str | None = None):
         """
         Initialize the citation graph analyzer.
 
@@ -83,17 +81,17 @@ class CitationGraphAnalyzer:
         self.graph: nx.DiGraph = nx.DiGraph()
 
         # Paper metadata cache
-        self.paper_metadata: Dict[str, Dict] = {}
+        self.paper_metadata: dict[str, dict] = {}
 
         # Mapping from arXiv ID to S2 paper ID
-        self.arxiv_to_s2: Dict[str, str] = {}
-        self.s2_to_arxiv: Dict[str, str] = {}
+        self.arxiv_to_s2: dict[str, str] = {}
+        self.s2_to_arxiv: dict[str, str] = {}
 
         # Track last API call time for rate limiting
         self._last_api_call = 0.0
 
         # Papers not found in S2
-        self.not_found: Set[str] = set()
+        self.not_found: set[str] = set()
 
     def _get_cache_path(self, arxiv_id: str) -> Path:
         """Get cache file path for an arXiv ID."""
@@ -101,24 +99,24 @@ class CitationGraphAnalyzer:
         safe_id = arxiv_id.replace("/", "_").replace(":", "_")
         return self.cache_dir / f"{safe_id}.json"
 
-    def _load_from_cache(self, arxiv_id: str) -> Optional[Dict]:
+    def _load_from_cache(self, arxiv_id: str) -> dict | None:
         """Load paper data from cache if available."""
         cache_path = self._get_cache_path(arxiv_id)
         if cache_path.exists():
             try:
-                with open(cache_path, "r") as f:
+                with open(cache_path) as f:
                     return json.load(f)
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 return None
         return None
 
-    def _save_to_cache(self, arxiv_id: str, data: Dict) -> None:
+    def _save_to_cache(self, arxiv_id: str, data: dict) -> None:
         """Save paper data to cache."""
         cache_path = self._get_cache_path(arxiv_id)
         try:
             with open(cache_path, "w") as f:
                 json.dump(data, f, indent=2)
-        except IOError as e:
+        except OSError as e:
             print(f"Warning: Could not cache data for {arxiv_id}: {e}")
 
     def _rate_limit(self) -> None:
@@ -128,7 +126,7 @@ class CitationGraphAnalyzer:
             time.sleep(self.RATE_LIMIT_SECONDS - elapsed)
         self._last_api_call = time.time()
 
-    def _fetch_papers_batch(self, arxiv_ids: List[str]) -> Dict[str, Dict]:
+    def _fetch_papers_batch(self, arxiv_ids: list[str]) -> dict[str, dict]:
         """
         Fetch paper data from Semantic Scholar for a batch of arXiv IDs.
 
@@ -180,7 +178,7 @@ class CitationGraphAnalyzer:
                 if response.status_code == 200:
                     batch_results = response.json()
 
-                    for arxiv_id, paper_data in zip(batch, batch_results):
+                    for arxiv_id, paper_data in zip(batch, batch_results, strict=False):
                         if paper_data is None:
                             # Paper not found in S2
                             self.not_found.add(arxiv_id)
@@ -197,7 +195,7 @@ class CitationGraphAnalyzer:
                                 self.s2_to_arxiv[s2_id] = arxiv_id
 
                 elif response.status_code == 429:
-                    print(f"Rate limited by S2 API. Waiting 60 seconds...")
+                    print("Rate limited by S2 API. Waiting 60 seconds...")
                     time.sleep(60)
                     # Retry this batch
                     return self._fetch_papers_batch(arxiv_ids)
@@ -214,7 +212,7 @@ class CitationGraphAnalyzer:
 
         return results
 
-    def build_citation_graph(self, papers: List[Dict]) -> nx.DiGraph:
+    def build_citation_graph(self, papers: list[dict]) -> nx.DiGraph:
         """
         Build a citation graph from a list of papers.
 
@@ -246,7 +244,7 @@ class CitationGraphAnalyzer:
             )
 
         # Fetch citation data from S2
-        print(f"    Fetching citation data from Semantic Scholar...")
+        print("    Fetching citation data from Semantic Scholar...")
         s2_data = self._fetch_papers_batch(arxiv_ids)
 
         # Build edges
@@ -297,7 +295,6 @@ class CitationGraphAnalyzer:
                 if cit is None:
                     continue
 
-                cit_id = cit.get("paperId")
                 cit_arxiv = None
 
                 ext_ids = cit.get("externalIds") or {}
@@ -318,7 +315,7 @@ class CitationGraphAnalyzer:
 
         return self.graph
 
-    def find_foundational_papers(self, papers: List[Dict], top_n: int = 50) -> List[Dict]:
+    def find_foundational_papers(self, papers: list[dict], top_n: int = 50) -> list[dict]:
         """
         Find papers most cited WITHIN the dataset.
 
@@ -365,7 +362,7 @@ class CitationGraphAnalyzer:
 
         return foundational
 
-    def find_bridge_papers(self, papers: List[Dict], top_n: int = 50) -> List[Dict]:
+    def find_bridge_papers(self, papers: list[dict], top_n: int = 50) -> list[dict]:
         """
         Find papers that connect different topic clusters.
 
@@ -443,7 +440,7 @@ class CitationGraphAnalyzer:
 
         return bridge_papers
 
-    def find_citation_cliques(self, papers: List[Dict], min_size: int = 3) -> List[Dict]:
+    def find_citation_cliques(self, papers: list[dict], min_size: int = 3) -> list[dict]:
         """
         Find groups of papers that frequently cite each other.
 
@@ -509,7 +506,7 @@ class CitationGraphAnalyzer:
 
         return clique_results
 
-    def compute_pagerank(self, papers: List[Dict], top_n: int = 100) -> List[Dict]:
+    def compute_pagerank(self, papers: list[dict], top_n: int = 100) -> list[dict]:
         """
         Compute PageRank centrality in the citation network.
 
@@ -560,8 +557,8 @@ class CitationGraphAnalyzer:
 
         return ranked_papers
 
-    def trace_idea_lineage(self, paper_arxiv_id: str, papers: List[Dict],
-                           max_depth: int = 5) -> Dict:
+    def trace_idea_lineage(self, paper_arxiv_id: str, papers: list[dict],
+                           max_depth: int = 5) -> dict:
         """
         Trace the citation chain for a specific paper.
 
@@ -585,7 +582,7 @@ class CitationGraphAnalyzer:
 
         paper_lookup = {p.get("arxiv_id"): p for p in papers if p.get("arxiv_id")}
 
-        def get_paper_info(arxiv_id: str) -> Dict:
+        def get_paper_info(arxiv_id: str) -> dict:
             paper = paper_lookup.get(arxiv_id, {})
             return {
                 "arxiv_id": arxiv_id,
@@ -641,7 +638,6 @@ class CitationGraphAnalyzer:
                 if nx.has_path(self.graph, paper_arxiv_id, arxiv_id):
                     root_ancestors.append(get_paper_info(arxiv_id))
 
-        root_paper = paper_lookup.get(paper_arxiv_id, {})
 
         return {
             "paper": get_paper_info(paper_arxiv_id),
@@ -733,7 +729,7 @@ class CitationGraphAnalyzer:
         print(f"    Exported graph to {output_path}")
         print(f"    Nodes: {stats['node_count']}, Edges: {stats['edge_count']}")
 
-    def get_graph_statistics(self) -> Dict:
+    def get_graph_statistics(self) -> dict:
         """
         Get comprehensive statistics about the citation graph.
 
@@ -784,7 +780,7 @@ class CitationGraphAnalyzer:
 
         return stats
 
-    def analyze_all(self, papers: List[Dict]) -> Dict:
+    def analyze_all(self, papers: list[dict]) -> dict:
         """
         Run all citation graph analyses.
 

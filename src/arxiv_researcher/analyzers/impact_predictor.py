@@ -7,9 +7,7 @@ Analyze what predicts paper success:
 - Paper scoring
 """
 
-from collections import defaultdict, Counter
-from typing import List, Dict, Tuple
-import math
+from collections import defaultdict
 
 
 class ImpactPredictor:
@@ -18,7 +16,7 @@ class ImpactPredictor:
     def __init__(self):
         self.feature_correlations = {}
 
-    def analyze_success_factors(self, papers: List[Dict]) -> Dict:
+    def analyze_success_factors(self, papers: list[dict]) -> dict:
         """Analyze what factors correlate with paper success."""
         print(f"    Analyzing success factors for {len(papers)} papers...")
 
@@ -38,7 +36,7 @@ class ImpactPredictor:
             "success_formula": self._derive_success_formula(papers_with_citations),
         }
 
-    def _analyze_features(self, papers: List[Dict]) -> Dict:
+    def _analyze_features(self, papers: list[dict]) -> dict:
         """Analyze correlation of features with citations."""
         features = {}
 
@@ -105,7 +103,7 @@ class ImpactPredictor:
 
         return features
 
-    def _analyze_category_success(self, papers: List[Dict]) -> Dict:
+    def _analyze_category_success(self, papers: list[dict]) -> dict:
         """Analyze success by category."""
         by_category = defaultdict(list)
 
@@ -133,7 +131,7 @@ class ImpactPredictor:
             "most_competitive": sorted(category_stats, key=lambda x: x["top_10_pct_threshold"], reverse=True)[:10],
         }
 
-    def _analyze_method_success(self, papers: List[Dict]) -> Dict:
+    def _analyze_method_success(self, papers: list[dict]) -> dict:
         """Analyze which methods correlate with higher citations."""
         method_citations = defaultdict(list)
 
@@ -159,7 +157,7 @@ class ImpactPredictor:
             "highest_impact_methods": method_stats[:20] if method_stats else [],
         }
 
-    def _analyze_author_success(self, papers: List[Dict]) -> Dict:
+    def _analyze_author_success(self, papers: list[dict]) -> dict:
         """Analyze how author metrics correlate with paper success."""
         # Group by author h-index buckets
         h_index_buckets = {
@@ -222,7 +220,7 @@ class ImpactPredictor:
             "insight": self._derive_author_insight(bucket_stats, team_stats),
         }
 
-    def _analyze_structural_factors(self, papers: List[Dict]) -> Dict:
+    def _analyze_structural_factors(self, papers: list[dict]) -> dict:
         """Analyze how paper structure correlates with success."""
         # Abstract length
         length_buckets = {
@@ -295,7 +293,7 @@ class ImpactPredictor:
             "title_characteristics": title_analysis,
         }
 
-    def _analyze_venue_success(self, papers: List[Dict]) -> Dict:
+    def _analyze_venue_success(self, papers: list[dict]) -> dict:
         """Analyze how venue correlates with success."""
         venue_citations = defaultdict(list)
 
@@ -321,7 +319,7 @@ class ImpactPredictor:
             "top_venues": venue_stats[:10],
         }
 
-    def _derive_success_formula(self, papers: List[Dict]) -> Dict:
+    def _derive_success_formula(self, papers: list[dict]) -> dict:
         """Derive a simple success prediction formula."""
         # Compute average citation impact of each factor
         factors = {}
@@ -367,7 +365,7 @@ class ImpactPredictor:
             "interpretation": self._interpret_formula(sorted_factors),
         }
 
-    def _simple_correlation(self, pairs: List[Tuple[float, float]]) -> str:
+    def _simple_correlation(self, pairs: list[tuple[float, float]]) -> str:
         """Compute simple correlation direction."""
         if len(pairs) < 10:
             return "insufficient_data"
@@ -392,7 +390,7 @@ class ImpactPredictor:
         else:
             return "weak"
 
-    def _derive_author_insight(self, h_index_stats: Dict, team_stats: Dict) -> str:
+    def _derive_author_insight(self, h_index_stats: dict, team_stats: dict) -> str:
         """Derive insight about author factors."""
         insights = []
 
@@ -404,7 +402,7 @@ class ImpactPredictor:
 
         return "; ".join(insights) if insights else "No strong author patterns detected"
 
-    def _interpret_formula(self, factors: List[Tuple[str, float]]) -> str:
+    def _interpret_formula(self, factors: list[tuple[str, float]]) -> str:
         """Interpret the success formula."""
         if not factors:
             return "Insufficient data for interpretation"
@@ -422,7 +420,7 @@ class ImpactPredictor:
             f"{top_factor[0]} is the strongest factor ({top_factor[1]}x citations)"
         )
 
-    def score_paper(self, paper: Dict, success_factors: Dict) -> Dict:
+    def score_paper(self, paper: dict, success_factors: dict) -> dict:
         """Score a paper based on success factors."""
         multipliers = success_factors.get("success_formula", {}).get("factor_multipliers", {})
 

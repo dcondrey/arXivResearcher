@@ -21,11 +21,11 @@ Advanced Analyzers (require optional dependencies):
 """
 
 # Core analyzers
-from arxiv_researcher.analyzers.text_analyzer import TextAnalyzer
-from arxiv_researcher.analyzers.network_analyzer import NetworkAnalyzer
-from arxiv_researcher.analyzers.trend_analyzer import TrendAnalyzer
 from arxiv_researcher.analyzers.gap_analyzer import GapAnalyzer
 from arxiv_researcher.analyzers.impact_predictor import ImpactPredictor
+from arxiv_researcher.analyzers.network_analyzer import NetworkAnalyzer
+from arxiv_researcher.analyzers.text_analyzer import TextAnalyzer
+from arxiv_researcher.analyzers.trend_analyzer import TrendAnalyzer
 
 __all__ = [
     "TextAnalyzer",

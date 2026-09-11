@@ -7,10 +7,10 @@ Comprehensive analysis of arXiv research papers.
 
 import json
 import os
+import re
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-import re
+from typing import Any
 
 
 class ResearchAnalyzer:
@@ -40,7 +40,7 @@ class ResearchAnalyzer:
 
     def __init__(
         self,
-        papers: List[Dict[str, Any]],
+        papers: list[dict[str, Any]],
         output_dir: str = "analysis",
     ) -> None:
         """Initialize the analyzer.
@@ -57,7 +57,7 @@ class ResearchAnalyzer:
         self,
         advanced: bool = True,
         fulltext: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run all analysis modules.
 
         Args:
@@ -96,7 +96,7 @@ class ResearchAnalyzer:
 
         return results
 
-    def analyze_text(self) -> Dict[str, Any]:
+    def analyze_text(self) -> dict[str, Any]:
         """Analyze text content of papers."""
         # Extract keywords using simple TF
         word_counts: Counter = Counter()
@@ -141,10 +141,10 @@ class ResearchAnalyzer:
             "total_papers": len(self.papers),
         }
 
-    def analyze_trends(self) -> Dict[str, Any]:
+    def analyze_trends(self) -> dict[str, Any]:
         """Analyze research trends over time."""
         # Group papers by time period
-        papers_by_period: Dict[str, List[Dict]] = defaultdict(list)
+        papers_by_period: dict[str, list[dict]] = defaultdict(list)
 
         for paper in self.papers:
             date_str = paper.get("published_date", "")
@@ -214,7 +214,7 @@ class ResearchAnalyzer:
             "total_periods": len(periods),
         }
 
-    def find_gaps(self) -> Dict[str, Any]:
+    def find_gaps(self) -> dict[str, Any]:
         """Identify research gaps and opportunities."""
         # Count category intersections
         intersection_counts: Counter = Counter()
@@ -267,7 +267,7 @@ class ResearchAnalyzer:
             "survey_opportunities": survey_opps[:10],
         }
 
-    def analyze_network(self) -> Dict[str, Any]:
+    def analyze_network(self) -> dict[str, Any]:
         """Analyze author collaboration network."""
         # Build co-authorship counts
         coauthor_counts: Counter = Counter()
@@ -309,7 +309,7 @@ class ResearchAnalyzer:
             "unique_authors": len(author_paper_counts),
         }
 
-    def predict_impact(self) -> Dict[str, Any]:
+    def predict_impact(self) -> dict[str, Any]:
         """Analyze factors correlated with paper impact."""
         # Simple feature analysis
         features = {
@@ -341,11 +341,11 @@ class ResearchAnalyzer:
             if len(values) > 0:
                 # Simple correlation approximation
                 high_citation_avg = sum(
-                    v for v, c in zip(values, citations) if c > 10
+                    v for v, c in zip(values, citations, strict=False) if c > 10
                 ) / max(1, sum(1 for c in citations if c > 10))
 
                 low_citation_avg = sum(
-                    v for v, c in zip(values, citations) if c <= 10
+                    v for v, c in zip(values, citations, strict=False) if c <= 10
                 ) / max(1, sum(1 for c in citations if c <= 10))
 
                 if low_citation_avg > 0:
@@ -384,7 +384,7 @@ class ResearchAnalyzer:
             "hot_papers": hot_papers[:20],
         }
 
-    def _save_results(self, results: Dict[str, Any]) -> None:
+    def _save_results(self, results: dict[str, Any]) -> None:
         """Save analysis results to files."""
         analysis_dir = os.path.join(self.output_dir, "analysis")
         os.makedirs(analysis_dir, exist_ok=True)

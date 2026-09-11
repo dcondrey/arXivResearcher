@@ -10,12 +10,13 @@ Analyze papers using dense vector embeddings:
 - Detect emerging clusters over time
 """
 
-import os
-import json
 import hashlib
+import json
+import os
 from collections import defaultdict
-from typing import List, Dict, Tuple, Optional, Any
 from pathlib import Path
+from typing import Any
+
 import numpy as np
 
 
@@ -36,8 +37,8 @@ class EmbeddingAnalyzer:
     def __init__(
         self,
         model_name: str = "all-MiniLM-L6-v2",
-        cache_dir: Optional[str] = None,
-        device: Optional[str] = None,
+        cache_dir: str | None = None,
+        device: str | None = None,
     ):
         """Initialize the embedding analyzer.
 
@@ -52,7 +53,7 @@ class EmbeddingAnalyzer:
         self.model_name = model_name
         self.model = None
         self.device = device
-        self.embeddings_cache: Dict[str, np.ndarray] = {}
+        self.embeddings_cache: dict[str, np.ndarray] = {}
         self.cache_dir = Path(cache_dir) if cache_dir else None
 
         if self.cache_dir:
@@ -63,17 +64,17 @@ class EmbeddingAnalyzer:
         if self.model is None:
             try:
                 from sentence_transformers import SentenceTransformer
-            except ImportError:
+            except ImportError as err:
                 raise ImportError(
                     "sentence-transformers is required for embedding analysis. "
                     "Install it with: pip install sentence-transformers"
-                )
+                ) from err
 
             print(f"    Loading embedding model: {self.model_name}...")
             self.model = SentenceTransformer(self.model_name, device=self.device)
             print(f"    Model loaded (embedding dimension: {self.model.get_sentence_embedding_dimension()})")
 
-    def _get_paper_text(self, paper: Dict) -> str:
+    def _get_paper_text(self, paper: dict) -> str:
         """Extract text from paper for embedding.
 
         Combines title and abstract, handling missing abstracts gracefully.
@@ -97,7 +98,7 @@ class EmbeddingAnalyzer:
             # If no abstract, just use title (repeated for slightly more context)
             return title
 
-    def _get_paper_id(self, paper: Dict) -> str:
+    def _get_paper_id(self, paper: dict) -> str:
         """Get a unique identifier for a paper.
 
         Args:
@@ -113,13 +114,13 @@ class EmbeddingAnalyzer:
             title = paper.get("title", "")
             return hashlib.md5(title.encode()).hexdigest()[:16]
 
-    def _get_cache_path(self, paper_id: str) -> Optional[Path]:
+    def _get_cache_path(self, paper_id: str) -> Path | None:
         """Get the file path for a cached embedding."""
         if self.cache_dir:
             return self.cache_dir / f"{paper_id}.npy"
         return None
 
-    def _load_cached_embedding(self, paper_id: str) -> Optional[np.ndarray]:
+    def _load_cached_embedding(self, paper_id: str) -> np.ndarray | None:
         """Load an embedding from cache (memory or disk)."""
         # Check memory cache first
         if paper_id in self.embeddings_cache:
@@ -144,10 +145,10 @@ class EmbeddingAnalyzer:
 
     def embed_papers(
         self,
-        papers: List[Dict],
+        papers: list[dict],
         batch_size: int = 32,
         show_progress: bool = True,
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """Generate embeddings for a list of papers.
 
         Args:
@@ -192,7 +193,7 @@ class EmbeddingAnalyzer:
             )
 
             # Store embeddings
-            for paper_id, embedding in zip(paper_ids, new_embeddings):
+            for paper_id, embedding in zip(paper_ids, new_embeddings, strict=False):
                 self._save_embedding_to_cache(paper_id, embedding)
                 embeddings[paper_id] = embedding
 
@@ -200,12 +201,12 @@ class EmbeddingAnalyzer:
 
     def cluster_papers(
         self,
-        papers: List[Dict],
+        papers: list[dict],
         n_clusters: int = 20,
-        embeddings: Optional[Dict[str, np.ndarray]] = None,
+        embeddings: dict[str, np.ndarray] | None = None,
         method: str = "kmeans",
         random_state: int = 42,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Cluster papers by semantic similarity.
 
         Args:
@@ -225,13 +226,13 @@ class EmbeddingAnalyzer:
                 - silhouette_score: Overall clustering quality score
         """
         try:
-            from sklearn.cluster import KMeans, AgglomerativeClustering
+            from sklearn.cluster import AgglomerativeClustering, KMeans
             from sklearn.metrics import silhouette_score
-        except ImportError:
+        except ImportError as err:
             raise ImportError(
                 "scikit-learn is required for clustering. "
                 "Install it with: pip install scikit-learn"
-            )
+            ) from err
 
         # Get embeddings if not provided
         if embeddings is None:
@@ -243,7 +244,7 @@ class EmbeddingAnalyzer:
         valid_ids = []
         valid_embeddings = []
 
-        for paper, paper_id in zip(papers, paper_ids):
+        for paper, paper_id in zip(papers, paper_ids, strict=False):
             if paper_id in embeddings:
                 valid_papers.append(paper)
                 valid_ids.append(paper_id)
@@ -292,7 +293,7 @@ class EmbeddingAnalyzer:
         cluster_papers = defaultdict(list)
         paper_distances = {}
 
-        for idx, (paper_id, label) in enumerate(zip(valid_ids, cluster_labels)):
+        for idx, (paper_id, label) in enumerate(zip(valid_ids, cluster_labels, strict=False)):
             cluster_assignments[paper_id] = int(label)
             cluster_papers[int(label)].append(valid_papers[idx])
 
@@ -341,12 +342,12 @@ class EmbeddingAnalyzer:
 
     def find_similar_papers(
         self,
-        paper: Dict,
-        papers: List[Dict],
+        paper: dict,
+        papers: list[dict],
         top_n: int = 10,
-        embeddings: Optional[Dict[str, np.ndarray]] = None,
+        embeddings: dict[str, np.ndarray] | None = None,
         exclude_self: bool = True,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Find papers most similar to a given paper.
 
         Args:
@@ -409,11 +410,11 @@ class EmbeddingAnalyzer:
 
     def find_embedding_gaps(
         self,
-        papers: List[Dict],
-        embeddings: Optional[Dict[str, np.ndarray]] = None,
+        papers: list[dict],
+        embeddings: dict[str, np.ndarray] | None = None,
         n_regions: int = 10,
         density_threshold: float = 0.25,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Find sparse regions in embedding space that represent potential research gaps.
 
         This method identifies areas of the semantic space with low paper density,
@@ -434,11 +435,11 @@ class EmbeddingAnalyzer:
         """
         try:
             from sklearn.neighbors import NearestNeighbors
-        except ImportError:
+        except ImportError as err:
             raise ImportError(
                 "scikit-learn is required for gap analysis. "
                 "Install it with: pip install scikit-learn"
-            )
+            ) from err
 
         # Get embeddings
         if embeddings is None:
@@ -450,7 +451,7 @@ class EmbeddingAnalyzer:
         valid_ids = []
         valid_embeddings = []
 
-        for paper, paper_id in zip(papers, paper_ids):
+        for paper, paper_id in zip(papers, paper_ids, strict=False):
             if paper_id in embeddings:
                 valid_papers.append(paper)
                 valid_ids.append(paper_id)
@@ -554,15 +555,15 @@ class EmbeddingAnalyzer:
 
     def visualize_landscape(
         self,
-        papers: List[Dict],
+        papers: list[dict],
         output_path: str,
-        embeddings: Optional[Dict[str, np.ndarray]] = None,
+        embeddings: dict[str, np.ndarray] | None = None,
         method: str = "umap",
         perplexity: int = 30,
         n_neighbors: int = 15,
         min_dist: float = 0.1,
-        cluster_info: Optional[Dict] = None,
-    ) -> Dict[str, Any]:
+        cluster_info: dict | None = None,
+    ) -> dict[str, Any]:
         """Generate 2D projection data for visualization of the research landscape.
 
         Args:
@@ -588,7 +589,7 @@ class EmbeddingAnalyzer:
         valid_ids = []
         valid_embeddings = []
 
-        for paper, paper_id in zip(papers, paper_ids):
+        for paper, paper_id in zip(papers, paper_ids, strict=False):
             if paper_id in embeddings:
                 valid_papers.append(paper)
                 valid_ids.append(paper_id)
@@ -608,11 +609,11 @@ class EmbeddingAnalyzer:
         if method == "umap":
             try:
                 import umap
-            except ImportError:
+            except ImportError as err:
                 raise ImportError(
                     "umap-learn is required for UMAP visualization. "
                     "Install it with: pip install umap-learn"
-                )
+                ) from err
 
             reducer = umap.UMAP(
                 n_components=2,
@@ -626,11 +627,11 @@ class EmbeddingAnalyzer:
         elif method == "tsne":
             try:
                 from sklearn.manifold import TSNE
-            except ImportError:
+            except ImportError as err:
                 raise ImportError(
                     "scikit-learn is required for t-SNE visualization. "
                     "Install it with: pip install scikit-learn"
-                )
+                ) from err
 
             tsne = TSNE(
                 n_components=2,
@@ -688,12 +689,12 @@ class EmbeddingAnalyzer:
 
     def detect_emerging_clusters(
         self,
-        papers: List[Dict],
-        embeddings: Optional[Dict[str, np.ndarray]] = None,
+        papers: list[dict],
+        embeddings: dict[str, np.ndarray] | None = None,
         time_field: str = "published_date",
         n_clusters: int = 30,
         recent_fraction: float = 0.25,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Detect clusters that are growing over time (emerging research areas).
 
         This method identifies clusters where recent papers are overrepresented,
@@ -802,7 +803,7 @@ class EmbeddingAnalyzer:
         declining = []
         stable = []
 
-        for cluster_id, dynamics in cluster_dynamics.items():
+        for _cluster_id, dynamics in cluster_dynamics.items():
             growth = dynamics["growth_ratio"]
 
             if growth == "new" or (isinstance(growth, (int, float)) and growth > 1.5):
@@ -834,10 +835,10 @@ class EmbeddingAnalyzer:
 
     def analyze_all(
         self,
-        papers: List[Dict],
-        output_dir: Optional[str] = None,
+        papers: list[dict],
+        output_dir: str | None = None,
         n_clusters: int = 20,
-    ) -> Tuple[List[Dict], Dict]:
+    ) -> tuple[list[dict], dict]:
         """Run comprehensive embedding analysis on a corpus of papers.
 
         Args:
