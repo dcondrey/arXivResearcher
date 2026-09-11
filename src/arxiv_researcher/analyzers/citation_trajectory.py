@@ -11,13 +11,12 @@ Uses Semantic Scholar API for citation data by year.
 """
 
 import json
+import math
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from collections import defaultdict
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple
-import math
 
 
 class CitationTrajectoryAnalyzer:
@@ -37,7 +36,7 @@ class CitationTrajectoryAnalyzer:
     DEFAULT_RATE_LIMIT = 1.0  # seconds between requests
     BATCH_SIZE = 100  # max papers per batch request
 
-    def __init__(self, rate_limit: float = DEFAULT_RATE_LIMIT, api_key: Optional[str] = None):
+    def __init__(self, rate_limit: float = DEFAULT_RATE_LIMIT, api_key: str | None = None):
         """
         Initialize the citation trajectory analyzer.
 
@@ -57,14 +56,14 @@ class CitationTrajectoryAnalyzer:
             time.sleep(self.rate_limit - elapsed)
         self._last_request_time = time.time()
 
-    def _get_headers(self) -> Dict[str, str]:
+    def _get_headers(self) -> dict[str, str]:
         """Get request headers including API key if available."""
         headers = {"User-Agent": "arxiv-research-intelligence/1.0"}
         if self.api_key:
             headers["x-api-key"] = self.api_key
         return headers
 
-    def _fetch_paper_with_citations(self, paper_id: str, id_type: str = "ARXIV") -> Optional[Dict]:
+    def _fetch_paper_with_citations(self, paper_id: str, id_type: str = "ARXIV") -> dict | None:
         """
         Fetch a single paper with citation data from Semantic Scholar.
 
@@ -98,7 +97,7 @@ class CitationTrajectoryAnalyzer:
                 return None
             elif e.code == 429:
                 # Rate limited - wait and retry once
-                print(f"    Rate limited, waiting 10 seconds...")
+                print("    Rate limited, waiting 10 seconds...")
                 time.sleep(10)
                 try:
                     req = urllib.request.Request(url, headers=self._get_headers())
@@ -111,7 +110,7 @@ class CitationTrajectoryAnalyzer:
             print(f"    Error fetching {paper_id}: {e}")
             return None
 
-    def _fetch_batch_papers(self, paper_ids: List[str], id_type: str = "ARXIV") -> Dict[str, Dict]:
+    def _fetch_batch_papers(self, paper_ids: list[str], id_type: str = "ARXIV") -> dict[str, dict]:
         """
         Fetch multiple papers in a single batch request.
 
@@ -157,7 +156,7 @@ class CitationTrajectoryAnalyzer:
 
             except urllib.error.HTTPError as e:
                 if e.code == 429:
-                    print(f"    Rate limited on batch, falling back to individual requests...")
+                    print("    Rate limited on batch, falling back to individual requests...")
                     for pid in batch:
                         result = self._fetch_paper_with_citations(pid, id_type)
                         if result:
@@ -169,7 +168,7 @@ class CitationTrajectoryAnalyzer:
 
         return results
 
-    def _extract_citation_history(self, paper_data: Dict) -> Dict[int, int]:
+    def _extract_citation_history(self, paper_data: dict) -> dict[int, int]:
         """
         Extract yearly citation counts from paper data.
 
@@ -189,7 +188,7 @@ class CitationTrajectoryAnalyzer:
 
         return dict(citations_by_year)
 
-    def fetch_citation_history(self, papers: List[Dict]) -> Dict[str, Dict]:
+    def fetch_citation_history(self, papers: list[dict]) -> dict[str, dict]:
         """
         Get yearly citation counts for each paper.
 
@@ -273,8 +272,8 @@ class CitationTrajectoryAnalyzer:
         print(f"    Retrieved citation history for {sum(1 for r in results.values() if r['has_history'])} papers")
         return results
 
-    def compute_citation_velocity(self, papers: List[Dict],
-                                   citation_history: Optional[Dict[str, Dict]] = None) -> Dict[str, Dict]:
+    def compute_citation_velocity(self, papers: list[dict],
+                                   citation_history: dict[str, dict] | None = None) -> dict[str, dict]:
         """
         Compute citation velocity and acceleration for each paper.
 
@@ -372,10 +371,10 @@ class CitationTrajectoryAnalyzer:
 
         return results
 
-    def identify_momentum_papers(self, papers: List[Dict],
-                                  citation_history: Optional[Dict[str, Dict]] = None,
+    def identify_momentum_papers(self, papers: list[dict],
+                                  citation_history: dict[str, dict] | None = None,
                                   min_citations: int = 5,
-                                  top_n: int = 50) -> List[Dict]:
+                                  top_n: int = 50) -> list[dict]:
         """
         Identify papers with accelerating citations (gaining momentum NOW).
 
@@ -444,12 +443,12 @@ class CitationTrajectoryAnalyzer:
         print(f"    Found {len(momentum_papers)} momentum papers")
         return momentum_papers[:top_n]
 
-    def identify_sleeping_beauties(self, papers: List[Dict],
-                                    citation_history: Optional[Dict[str, Dict]] = None,
+    def identify_sleeping_beauties(self, papers: list[dict],
+                                    citation_history: dict[str, dict] | None = None,
                                     min_age_years: int = 3,
                                     min_citations: int = 20,
                                     awakening_threshold: float = 3.0,
-                                    top_n: int = 30) -> List[Dict]:
+                                    top_n: int = 30) -> list[dict]:
         """
         Identify sleeping beauties - papers that were ignored then suddenly took off.
 
@@ -547,11 +546,11 @@ class CitationTrajectoryAnalyzer:
         print(f"    Found {len(sleeping_beauties)} sleeping beauties")
         return sleeping_beauties[:top_n]
 
-    def identify_declining_papers(self, papers: List[Dict],
-                                   citation_history: Optional[Dict[str, Dict]] = None,
+    def identify_declining_papers(self, papers: list[dict],
+                                   citation_history: dict[str, dict] | None = None,
                                    min_peak_citations: int = 50,
                                    decline_threshold: float = 0.5,
-                                   top_n: int = 30) -> List[Dict]:
+                                   top_n: int = 30) -> list[dict]:
         """
         Identify papers that peaked and are now declining in citations.
 
@@ -581,7 +580,6 @@ class CitationTrajectoryAnalyzer:
                 continue
 
             history = citation_history[arxiv_id]
-            velocity = velocity_data[arxiv_id]
 
             citations_by_year = history.get("citations_by_year", {})
 
@@ -634,9 +632,9 @@ class CitationTrajectoryAnalyzer:
         print(f"    Found {len(declining_papers)} declining papers")
         return declining_papers[:top_n]
 
-    def predict_future_citations(self, paper: Dict,
-                                  citation_history: Optional[Dict[str, Dict]] = None,
-                                  years_ahead: int = 2) -> Dict:
+    def predict_future_citations(self, paper: dict,
+                                  citation_history: dict[str, dict] | None = None,
+                                  years_ahead: int = 2) -> dict:
         """
         Simple trend extrapolation to predict future citations.
 
@@ -673,7 +671,7 @@ class CitationTrajectoryAnalyzer:
 
             predictions = []
             current = total_citations
-            for i in range(1, years_ahead + 1):
+            for _i in range(1, years_ahead + 1):
                 current += annual_velocity
                 predictions.append(round(current))
 
@@ -693,7 +691,6 @@ class CitationTrajectoryAnalyzer:
         trend = self._calculate_trend(values)
 
         # Extrapolate
-        current_year = datetime.now().year
         last_value = values[-1]
 
         predictions = []
@@ -721,10 +718,10 @@ class CitationTrajectoryAnalyzer:
             "r_squared": trend["r_squared"],
         }
 
-    def find_breakout_papers(self, papers: List[Dict],
-                              citation_history: Optional[Dict[str, Dict]] = None,
+    def find_breakout_papers(self, papers: list[dict],
+                              citation_history: dict[str, dict] | None = None,
                               top_percentile: float = 0.1,
-                              min_citations: int = 10) -> List[Dict]:
+                              min_citations: int = 10) -> list[dict]:
         """
         Find papers in top 10% velocity for their age cohort.
 
@@ -824,8 +821,8 @@ class CitationTrajectoryAnalyzer:
         print(f"    Found {len(breakout_papers)} breakout papers")
         return breakout_papers
 
-    def compute_trajectory_metrics(self, paper: Dict,
-                                    citation_history: Optional[Dict[str, Dict]] = None) -> Dict:
+    def compute_trajectory_metrics(self, paper: dict,
+                                    citation_history: dict[str, dict] | None = None) -> dict:
         """
         Compute comprehensive trajectory metrics for a single paper.
 
@@ -892,9 +889,9 @@ class CitationTrajectoryAnalyzer:
             "citations_by_year": citations_by_year,
         }
 
-    def visualize_trajectories(self, papers: List[Dict],
+    def visualize_trajectories(self, papers: list[dict],
                                 output_path: str,
-                                citation_history: Optional[Dict[str, Dict]] = None) -> Dict:
+                                citation_history: dict[str, dict] | None = None) -> dict:
         """
         Generate trajectory data for plotting/visualization.
 
@@ -946,12 +943,11 @@ class CitationTrajectoryAnalyzer:
             })
 
         # Aggregate statistics
-        current_year = datetime.now().year
-        all_years = sorted(set(
+        all_years = sorted({
             y for t in trajectories for y in t["years"]
-        ))
+        })
 
-        yearly_totals = {y: 0 for y in all_years}
+        yearly_totals = dict.fromkeys(all_years, 0)
         for t in trajectories:
             for i, year in enumerate(t["years"]):
                 yearly_totals[year] += t["annual_citations"][i]
@@ -977,7 +973,7 @@ class CitationTrajectoryAnalyzer:
 
         return visualization_data
 
-    def _calculate_trend(self, values: List[float]) -> Dict:
+    def _calculate_trend(self, values: list[float]) -> dict:
         """Calculate linear trend using least squares."""
         n = len(values)
         if n < 2:
@@ -1012,7 +1008,7 @@ class CitationTrajectoryAnalyzer:
             "r_squared": round(max(0, r_squared), 4),
         }
 
-    def analyze_trajectories(self, papers: List[Dict]) -> Dict:
+    def analyze_trajectories(self, papers: list[dict]) -> dict:
         """
         Run comprehensive trajectory analysis on a set of papers.
 

@@ -34,8 +34,8 @@ __author__ = "David Condrey"
 __email__ = "david@writerslogic.com"
 __license__ = "Apache-2.0"
 
-from arxiv_researcher.collector import ArxivCollector
 from arxiv_researcher.analyzer import ResearchAnalyzer
+from arxiv_researcher.collector import ArxivCollector
 
 __all__ = [
     "__version__",

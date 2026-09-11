@@ -10,15 +10,15 @@ Track and analyze how researchers evolve over time:
 - Author clustering
 """
 
+import hashlib
+import json
+import math
 import re
 import time
-import json
-import hashlib
-from collections import defaultdict, Counter
-from typing import List, Dict, Set, Tuple, Optional, Any
-from datetime import datetime, timedelta
+from collections import Counter, defaultdict
+from datetime import datetime
 from pathlib import Path
-import math
+from typing import Any
 
 try:
     import requests
@@ -46,11 +46,11 @@ class RateLimiter:
 class AuthorCache:
     """Cache for author data to avoid redundant API calls."""
 
-    def __init__(self, cache_dir: Optional[str] = None, ttl_hours: int = 24):
+    def __init__(self, cache_dir: str | None = None, ttl_hours: int = 24):
         self.cache_dir = Path(cache_dir) if cache_dir else Path.home() / ".arxiv_research_cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.ttl_seconds = ttl_hours * 3600
-        self.memory_cache: Dict[str, Dict] = {}
+        self.memory_cache: dict[str, dict] = {}
 
     def _get_cache_key(self, author_id: str) -> str:
         """Generate a cache key for an author."""
@@ -60,7 +60,7 @@ class AuthorCache:
         """Get the file path for a cached author."""
         return self.cache_dir / f"author_{cache_key}.json"
 
-    def get(self, author_id: str) -> Optional[Dict]:
+    def get(self, author_id: str) -> dict | None:
         """Get cached author data if available and not expired."""
         # Check memory cache first
         if author_id in self.memory_cache:
@@ -74,18 +74,18 @@ class AuthorCache:
 
         if cache_path.exists():
             try:
-                with open(cache_path, 'r') as f:
+                with open(cache_path) as f:
                     cached = json.load(f)
                 if time.time() - cached.get("_cached_at", 0) < self.ttl_seconds:
                     # Store in memory cache for faster access
                     self.memory_cache[author_id] = cached
                     return cached.get("data")
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 pass
 
         return None
 
-    def set(self, author_id: str, data: Dict):
+    def set(self, author_id: str, data: dict):
         """Cache author data."""
         cached = {
             "data": data,
@@ -103,7 +103,7 @@ class AuthorCache:
         try:
             with open(cache_path, 'w') as f:
                 json.dump(cached, f)
-        except IOError:
+        except OSError:
             pass  # Silently fail disk cache writes
 
     def clear(self):
@@ -112,7 +112,7 @@ class AuthorCache:
         for cache_file in self.cache_dir.glob("author_*.json"):
             try:
                 cache_file.unlink()
-            except IOError:
+            except OSError:
                 pass
 
 
@@ -123,9 +123,9 @@ class SemanticScholarClient:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         calls_per_second: float = 10.0,
-        cache_dir: Optional[str] = None,
+        cache_dir: str | None = None,
         cache_ttl_hours: int = 24,
     ):
         if not HAS_REQUESTS:
@@ -143,9 +143,9 @@ class SemanticScholarClient:
         self,
         method: str,
         endpoint: str,
-        params: Optional[Dict] = None,
-        json_data: Optional[Any] = None,
-    ) -> Optional[Dict]:
+        params: dict | None = None,
+        json_data: Any | None = None,
+    ) -> dict | None:
         """Make a rate-limited API request."""
         self.rate_limiter.wait()
 
@@ -184,9 +184,9 @@ class SemanticScholarClient:
     def get_author(
         self,
         author_id: str,
-        fields: Optional[List[str]] = None,
+        fields: list[str] | None = None,
         use_cache: bool = True,
-    ) -> Optional[Dict]:
+    ) -> dict | None:
         """
         Get author data from Semantic Scholar.
 
@@ -222,10 +222,10 @@ class SemanticScholarClient:
 
     def get_authors_batch(
         self,
-        author_ids: List[str],
-        fields: Optional[List[str]] = None,
+        author_ids: list[str],
+        fields: list[str] | None = None,
         use_cache: bool = True,
-    ) -> Dict[str, Dict]:
+    ) -> dict[str, dict]:
         """
         Get multiple authors in batch.
 
@@ -281,7 +281,7 @@ class SemanticScholarClient:
 
         return results
 
-    def search_author(self, name: str, limit: int = 5) -> List[Dict]:
+    def search_author(self, name: str, limit: int = 5) -> list[dict]:
         """
         Search for authors by name.
 
@@ -319,8 +319,8 @@ class AuthorTrajectoryAnalyzer:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        cache_dir: Optional[str] = None,
+        api_key: str | None = None,
+        cache_dir: str | None = None,
         calls_per_second: float = 10.0,
     ):
         """
@@ -343,12 +343,12 @@ class AuthorTrajectoryAnalyzer:
                 pass
 
         # Internal data structures
-        self.author_papers: Dict[str, List[Dict]] = defaultdict(list)
-        self.coauthor_graph: Dict[str, Set[str]] = defaultdict(set)
-        self.author_categories: Dict[str, Counter] = defaultdict(Counter)
-        self.author_metrics: Dict[str, Dict] = {}
+        self.author_papers: dict[str, list[dict]] = defaultdict(list)
+        self.coauthor_graph: dict[str, set[str]] = defaultdict(set)
+        self.author_categories: dict[str, Counter] = defaultdict(Counter)
+        self.author_metrics: dict[str, dict] = {}
 
-    def _resolve_author_id(self, author_name_or_id: str) -> Optional[str]:
+    def _resolve_author_id(self, author_name_or_id: str) -> str | None:
         """Resolve an author name to a Semantic Scholar ID."""
         if not self.client:
             return None
@@ -364,7 +364,7 @@ class AuthorTrajectoryAnalyzer:
 
         return None
 
-    def analyze_author(self, author_name_or_id: str) -> Dict:
+    def analyze_author(self, author_name_or_id: str) -> dict:
         """
         Perform a comprehensive analysis of an author's career trajectory.
 
@@ -426,7 +426,7 @@ class AuthorTrajectoryAnalyzer:
 
         return analysis
 
-    def _analyze_publication_timeline(self, papers: List[Dict]) -> Dict:
+    def _analyze_publication_timeline(self, papers: list[dict]) -> dict:
         """Analyze publication patterns over time."""
         papers_by_year = defaultdict(list)
 
@@ -467,7 +467,7 @@ class AuthorTrajectoryAnalyzer:
             "avg_papers_per_year": round(sum(paper_counts) / len(paper_counts), 2),
         }
 
-    def _analyze_citation_growth(self, papers: List[Dict]) -> Dict:
+    def _analyze_citation_growth(self, papers: list[dict]) -> dict:
         """Analyze citation accumulation patterns."""
         papers_by_year = defaultdict(list)
 
@@ -527,7 +527,7 @@ class AuthorTrajectoryAnalyzer:
             ),
         }
 
-    def _analyze_topic_evolution(self, papers: List[Dict]) -> Dict:
+    def _analyze_topic_evolution(self, papers: list[dict]) -> dict:
         """Analyze how an author's research topics have evolved."""
         topics_by_year = defaultdict(Counter)
 
@@ -598,7 +598,7 @@ class AuthorTrajectoryAnalyzer:
             "late_period": f"{late_years[0]}-{late_years[-1]}" if late_years else "N/A",
         }
 
-    def _analyze_collaboration_patterns_single(self, papers: List[Dict]) -> Dict:
+    def _analyze_collaboration_patterns_single(self, papers: list[dict]) -> dict:
         """Analyze collaboration patterns for a single author."""
         coauthors = Counter()
         coauthors_by_year = defaultdict(set)
@@ -614,7 +614,6 @@ class AuthorTrajectoryAnalyzer:
 
             for author in authors:
                 author_id = author.get("authorId")
-                author_name = author.get("name")
                 if author_id:
                     coauthors[author_id] += 1
                     if year:
@@ -649,7 +648,7 @@ class AuthorTrajectoryAnalyzer:
             ) if papers else 0,
         }
 
-    def _estimate_career_stage(self, papers: List[Dict], analysis: Dict) -> Dict:
+    def _estimate_career_stage(self, papers: list[dict], analysis: dict) -> dict:
         """Estimate the author's career stage."""
         timeline = analysis.get("publication_timeline", {})
         career_length = timeline.get("career_length_years", 0)
@@ -689,7 +688,7 @@ class AuthorTrajectoryAnalyzer:
             "total_papers": total_papers,
         }
 
-    def compute_author_momentum_from_papers(self, papers: List[Dict]) -> Dict:
+    def compute_author_momentum_from_papers(self, papers: list[dict]) -> dict:
         """
         Compute career momentum from paper data.
 
@@ -762,7 +761,7 @@ class AuthorTrajectoryAnalyzer:
             "recent_papers_per_year": round(recent_papers_rate, 2),
         }
 
-    def find_rising_stars(self, papers: List[Dict], top_n: int = 50) -> List[Dict]:
+    def find_rising_stars(self, papers: list[dict], top_n: int = 50) -> list[dict]:
         """
         Identify junior researchers with accelerating impact.
 
@@ -867,7 +866,7 @@ class AuthorTrajectoryAnalyzer:
         rising_stars.sort(key=lambda x: x["star_score"], reverse=True)
         return rising_stars[:top_n]
 
-    def track_topic_migration(self, author_name_or_id: str) -> Dict:
+    def track_topic_migration(self, author_name_or_id: str) -> dict:
         """
         Track what research fields an author has moved between.
 
@@ -916,7 +915,7 @@ class AuthorTrajectoryAnalyzer:
             "topic_diversity_score": topic_evolution.get("topic_diversity", 0),
         }
 
-    def find_collaboration_evolution(self, author_name_or_id: str) -> Dict:
+    def find_collaboration_evolution(self, author_name_or_id: str) -> dict:
         """
         Analyze how an author's collaboration network has changed over time.
 
@@ -945,10 +944,10 @@ class AuthorTrajectoryAnalyzer:
 
     def identify_prolific_authors(
         self,
-        papers: List[Dict],
+        papers: list[dict],
         top_n: int = 100,
         min_papers: int = 3,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Identify the most productive authors in a paper dataset.
 
@@ -1019,10 +1018,10 @@ class AuthorTrajectoryAnalyzer:
 
     def identify_influential_authors(
         self,
-        papers: List[Dict],
+        papers: list[dict],
         top_n: int = 100,
         min_papers: int = 2,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Identify the most influential authors (high impact, not just volume).
 
@@ -1105,11 +1104,11 @@ class AuthorTrajectoryAnalyzer:
 
     def find_potential_collaborators(
         self,
-        your_interests: List[str],
-        papers: List[Dict],
+        your_interests: list[str],
+        papers: list[dict],
         top_n: int = 50,
-        exclude_authors: Optional[List[str]] = None,
-    ) -> List[Dict]:
+        exclude_authors: list[str] | None = None,
+    ) -> list[dict]:
         """
         Find authors working on topics you care about.
 
@@ -1197,7 +1196,7 @@ class AuthorTrajectoryAnalyzer:
         collaborators.sort(key=lambda x: x["relevance_score"], reverse=True)
         return collaborators[:top_n]
 
-    def compute_author_momentum(self, author_name_or_id: str) -> Dict:
+    def compute_author_momentum(self, author_name_or_id: str) -> dict:
         """
         Compute whether an author's impact is growing or declining.
 
@@ -1229,10 +1228,10 @@ class AuthorTrajectoryAnalyzer:
 
     def find_author_clusters(
         self,
-        papers: List[Dict],
+        papers: list[dict],
         min_cluster_size: int = 3,
         min_shared_papers: int = 2,
-    ) -> Dict:
+    ) -> dict:
         """
         Find groups of authors that frequently collaborate.
 
@@ -1340,7 +1339,7 @@ class AuthorTrajectoryAnalyzer:
             "total_clustered_authors": sum(c["size"] for c in cluster_info),
         }
 
-    def build_from_papers(self, papers: List[Dict]) -> Dict:
+    def build_from_papers(self, papers: list[dict]) -> dict:
         """
         Build internal data structures from a list of papers.
 
@@ -1357,7 +1356,6 @@ class AuthorTrajectoryAnalyzer:
         self.author_categories.clear()
 
         for paper in papers:
-            arxiv_id = paper.get("arxiv_id", "")
             authors = paper.get("author_list", [])
             category = paper.get("primary_category", "")
 
@@ -1377,7 +1375,7 @@ class AuthorTrajectoryAnalyzer:
             ) if self.author_papers else 0,
         }
 
-    def _compute_trend(self, values: List[float]) -> str:
+    def _compute_trend(self, values: list[float]) -> str:
         """Compute simple linear trend direction."""
         if len(values) < 2:
             return "insufficient_data"

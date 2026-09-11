@@ -9,10 +9,7 @@ Detect and forecast research trends:
 - Forecasting
 """
 
-from collections import defaultdict, Counter
-from typing import List, Dict, Tuple, Optional
-import math
-from datetime import datetime
+from collections import defaultdict
 
 
 class TrendAnalyzer:
@@ -21,7 +18,7 @@ class TrendAnalyzer:
     def __init__(self):
         self.time_series = {}
 
-    def analyze_trends(self, papers: List[Dict]) -> Dict:
+    def analyze_trends(self, papers: list[dict]) -> dict:
         """Run comprehensive trend analysis."""
         print(f"    Analyzing trends for {len(papers)} papers...")
 
@@ -38,7 +35,7 @@ class TrendAnalyzer:
             "sleeping_beauties": self.find_sleeping_beauties(papers),
         }
 
-    def _build_time_series(self, papers: List[Dict]):
+    def _build_time_series(self, papers: list[dict]):
         """Build time series data structures."""
         self.papers_by_month = defaultdict(list)
         self.papers_by_category_month = defaultdict(lambda: defaultdict(list))
@@ -51,7 +48,7 @@ class TrendAnalyzer:
                 category = paper.get("primary_category", "")
                 self.papers_by_category_month[category][month].append(paper)
 
-    def analyze_category_trends(self, papers: List[Dict]) -> Dict:
+    def analyze_category_trends(self, papers: list[dict]) -> dict:
         """Analyze trends by arXiv category."""
         trends = {}
 
@@ -92,7 +89,7 @@ class TrendAnalyzer:
             }
 
         # Classify into emerging, stable, declining
-        for cat, data in trends.items():
+        for _cat, data in trends.items():
             if data["momentum"] > 0.5 and data["trend_slope"] > 0:
                 data["status"] = "emerging"
             elif data["momentum"] < -0.3 and data["trend_slope"] < 0:
@@ -102,7 +99,7 @@ class TrendAnalyzer:
 
         return trends
 
-    def analyze_method_trends(self, papers: List[Dict]) -> Dict:
+    def analyze_method_trends(self, papers: list[dict]) -> dict:
         """Analyze trends in methods/techniques usage."""
         method_by_month = defaultdict(lambda: defaultdict(int))
 
@@ -157,7 +154,7 @@ class TrendAnalyzer:
             ],
         }
 
-    def analyze_topic_trends(self, papers: List[Dict]) -> Dict:
+    def analyze_topic_trends(self, papers: list[dict]) -> dict:
         """Analyze trends in extracted topics/keywords."""
         keyword_by_month = defaultdict(lambda: defaultdict(int))
 
@@ -200,7 +197,7 @@ class TrendAnalyzer:
             "emerging_topics": emerging_topics[:30],
         }
 
-    def analyze_citation_velocity(self, papers: List[Dict]) -> Dict:
+    def analyze_citation_velocity(self, papers: list[dict]) -> dict:
         """Analyze citation velocity patterns."""
         velocity_by_category = defaultdict(list)
         velocity_by_month = defaultdict(list)
@@ -244,7 +241,7 @@ class TrendAnalyzer:
             )[:10],
         }
 
-    def analyze_saturation(self, papers: List[Dict]) -> Dict:
+    def analyze_saturation(self, papers: list[dict]) -> dict:
         """Analyze topic/category saturation (too crowded vs. opportunity)."""
         saturation = {}
 
@@ -296,7 +293,7 @@ class TrendAnalyzer:
 
         return saturation
 
-    def find_hot_papers(self, papers: List[Dict], top_n: int = 50) -> List[Dict]:
+    def find_hot_papers(self, papers: list[dict], top_n: int = 50) -> list[dict]:
         """Find papers with unusually high citation velocity."""
         hot = []
 
@@ -321,7 +318,7 @@ class TrendAnalyzer:
         hot.sort(key=lambda x: x["citations_per_month"], reverse=True)
         return hot[:top_n]
 
-    def find_sleeping_beauties(self, papers: List[Dict], top_n: int = 30) -> List[Dict]:
+    def find_sleeping_beauties(self, papers: list[dict], top_n: int = 30) -> list[dict]:
         """Find papers that got recognition late (sleeping beauties)."""
         beauties = []
 
@@ -345,7 +342,7 @@ class TrendAnalyzer:
         beauties.sort(key=lambda x: x["citations_per_month"], reverse=True)
         return beauties[:top_n]
 
-    def forecast_categories(self, papers: List[Dict], periods_ahead: int = 3) -> Dict:
+    def forecast_categories(self, papers: list[dict], periods_ahead: int = 3) -> dict:
         """Simple forecasting for category volumes."""
         forecasts = {}
 
@@ -374,7 +371,7 @@ class TrendAnalyzer:
 
         return forecasts
 
-    def _calculate_trend(self, values: List[float]) -> Dict:
+    def _calculate_trend(self, values: list[float]) -> dict:
         """Calculate linear trend using least squares."""
         n = len(values)
         if n < 2:
@@ -409,7 +406,7 @@ class TrendAnalyzer:
             "r_squared": round(max(0, r_squared), 4),
         }
 
-    def _calculate_gini(self, values: List[float]) -> float:
+    def _calculate_gini(self, values: list[float]) -> float:
         """Calculate Gini coefficient (inequality measure)."""
         if not values or len(values) < 2:
             return 0
@@ -423,7 +420,7 @@ class TrendAnalyzer:
 
         cumsum = 0
         gini_sum = 0
-        for i, v in enumerate(values):
+        for _i, v in enumerate(values):
             cumsum += v
             gini_sum += cumsum
 

@@ -16,7 +16,6 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional
 
 from arxiv_researcher import __version__
 
@@ -229,7 +228,7 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         input_path = os.path.join(input_path, "papers.json")
 
     print(f"Loading papers from: {input_path}")
-    with open(input_path, "r") as f:
+    with open(input_path) as f:
         papers = json.load(f)
 
     print(f"Loaded {len(papers):,} papers")
@@ -244,12 +243,12 @@ def cmd_analyze(args: argparse.Namespace) -> int:
 
     # Run analysis
     analyzer = ResearchAnalyzer(papers, output_dir=output_dir)
-    results = analyzer.analyze(
+    analyzer.analyze(
         advanced=not args.skip_advanced,
         fulltext=args.fulltext,
     )
 
-    print(f"\nAnalysis complete!")
+    print("\nAnalysis complete!")
     print(f"Results saved to: {output_dir}/analysis/")
 
     return 0
@@ -275,7 +274,7 @@ def cmd_report(args: argparse.Namespace) -> int:
     return 0
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     """Main entry point for the CLI."""
     parser = create_parser()
     args = parser.parse_args(argv)
