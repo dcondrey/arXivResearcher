@@ -89,7 +89,7 @@ jobs:
           git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> changelog.md || echo "- Initial release" >> changelog.md
 
       - name: Generate Generic Attestations
-        uses: actions/attest@v4.1.0
+        uses: actions/attest@v4.2.2
         with:
           subject-path: 'dist/*'
 
