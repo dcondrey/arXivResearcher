@@ -1,34 +1,11 @@
-<!-- repo-header:start -->
-<img src="docs/images/logo.svg" alt="arXiv Researcher logo" width="120" align="left">
+### arXiv Researcher
 
-<h3>arXiv Researcher</h3>
-
-<p><strong>arXiv research intelligence and visualization dashboard for exploring research data</strong></p>
+<img align="left" width="96" alt="arXiv Researcher logo" src="docs/images/logo.svg">
+arXiv research intelligence and visualization dashboard for exploring research data.
 
 <br clear="left">
 
-<p align="center">
-  <a href="https://github.com/dcondrey/arXivResearcher/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/dcondrey/arXivResearcher/ci.yml?style=flat-square&labelColor=20232a&branch=main&label=CI" alt="CI"></a>
-  <a href="https://scorecard.dev/viewer/?uri=github.com/dcondrey/arXivResearcher"><img src="https://img.shields.io/ossf-scorecard/github.com/dcondrey/arXivResearcher?style=flat-square&labelColor=20232a&label=OpenSSF" alt="OpenSSF Scorecard"></a>
-  <a href="https://pypi.org/project/arxiv-researcher/"><img src="https://img.shields.io/pypi/v/arxiv-researcher.svg?style=flat-square&labelColor=20232a&color=007ec6" alt="PyPI version"></a>
-  <a href="https://pypi.org/project/arxiv-researcher/"><img src="https://img.shields.io/pypi/pyversions/arxiv-researcher.svg?style=flat-square&labelColor=20232a&color=007ec6" alt="Python versions"></a>
-  <a href="https://codecov.io/gh/dcondrey/arXivResearcher"><img src="https://img.shields.io/codecov/c/github/dcondrey/arXivResearcher?style=flat-square&labelColor=20232a&label=coverage" alt="Coverage"></a>
-  <a href=".bestpractices.json"><img src="https://img.shields.io/badge/best%20practices-evidence%20reviewed-6a4c93?style=flat-square&labelColor=20232a" alt="Best Practices Evidence"></a>
-  <a href="https://github.com/dcondrey/arXivResearcher/blob/main/LICENSE"><img src="https://img.shields.io/github/license/dcondrey/arXivResearcher?style=flat-square&labelColor=20232a&color=007ec6&label=license" alt="License"></a>
-  <a href="https://github.com/dcondrey/arXivResearcher/blob/main/CODE_OF_CONDUCT.md"><img src="https://img.shields.io/badge/code%20of%20conduct-Contributor%20Covenant%202.1-6a4c93?style=flat-square&labelColor=20232a" alt="Code of Conduct"></a>
-  <a href="https://github.com/sponsors/dcondrey"><img src="https://img.shields.io/badge/GitHub%20Sponsors-Sponsor-EA4AAA?style=flat-square&labelColor=20232a" alt="GitHub Sponsors"></a>
-</p>
-
-<p align="center">
-  <a href="#features">Features</a>
-  &middot; <a href="#installation">Installation</a>
-  &middot; <a href="#quick-start">Quick Start</a>
-  &middot; <a href="#documentation">Documentation</a>
-  &middot; <a href="#contributing">Contributing</a>
-</p>
-<!-- repo-header:end -->
-
----
+[![CI](https://img.shields.io/github/actions/workflow/status/dcondrey/arXivResearcher/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/dcondrey/arXivResearcher/actions/workflows/ci.yml) [![License](https://img.shields.io/github/license/dcondrey/arXivResearcher?style=flat-square)](https://github.com/dcondrey/arXivResearcher/blob/main/LICENSE)
 
 **arXiv Researcher** is a comprehensive tool for mining, analyzing, and visualizing research data from [arXiv](https://arxiv.org). It helps researchers identify trends, discover opportunities, and understand the research landscape across computer science, physics, mathematics, and more.
 
